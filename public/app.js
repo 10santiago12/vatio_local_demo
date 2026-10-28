@@ -36,7 +36,8 @@ const state = {
   info: null,
   tariff: Number(localStorage.getItem("vatio_tariff") || 950),
   investment: Number(localStorage.getItem("vatio_investment") || 1800000),
-  role: localStorage.getItem("vatio_role") || "Administrador",
+  role: "",
+  csrf: "",
   accepted: new Set(),
   reviewedAlerts: new Set(),
   moreOpen: new URLSearchParams(location.search).get("more") === "1",
@@ -97,6 +98,7 @@ function currentCost(){
 }
 function sourcePill(){
   const source = state.telemetry?.source;
+  if(source === "esp32" && readings().length && readings().every(r=>r.effective_status === "inactive")) return `<span class="pill warn">Pérdida de comunicación</span>`;
   if(source === "esp32") return `<span class="pill good"><span class="live-dot"></span>ESP32 en vivo</span>`;
   return `<span class="pill info">${icon("cpu","sm")}Datos simulados</span>`;
 }
@@ -336,7 +338,6 @@ function headerHtml(title){
     <div class="header-actions">
       ${sourcePill()}
       ${pill(state.role,"good")}
-      <button class="btn" data-action="cycle-role" aria-label="Cambiar rol">${icon("user-round","sm")}<span class="label">Cambiar rol</span></button>
       <button class="icon-btn" data-action="toggle-theme" aria-label="${toLight?"Cambiar a tema claro":"Cambiar a tema oscuro"}" title="${toLight?"Tema claro":"Tema oscuro"}">${icon(toLight?"sun":"moon")}</button>
     </div>`;
 }
@@ -345,6 +346,7 @@ function mountShell(){
     <div class="app-shell">
       <aside class="sidebar" id="sidebar"></aside>
       <main class="main">
+        <div class="card tint-warn" role="status">Prototipo en desarrollo: alertas, recomendaciones, ahorro y control incluyen ejemplos no persistentes. No se ejecutan órdenes físicas.</div>
         <div class="mobile-brand"><span class="logo">${icon("zap")}</span><span class="brand-name">Vatio</span><span class="site-name muted">Panadería La Espiga · Chía</span></div>
         <header class="header" id="header"></header>
         <div class="content" id="content"></div>
@@ -490,7 +492,7 @@ function buildAlerts(){
   const alerts = [];
   for(const r of readings()){
     if(r.effective_status==="inactive"){
-      alerts.push({id:`inactive-${r.module_id}`, kind:"critical", type:"Módulo inactivo", load:r.load_name, detail:`Sin datos ${ageLabel(r)}`});
+      alerts.push({id:`inactive-${r.module_id}`, kind:"critical", type:"Pérdida de comunicación", load:r.load_name, detail:`Sin datos ${ageLabel(r)}`});
     }
     if(r.load_id==="freezer" && Number(r.power_w)>390){
       alerts.push({id:"freezer-maint",kind:"maintenance",type:"Mantenimiento",load:r.load_name,detail:"Potencia instantánea compatible con el escenario de deterioro +18 %."});
@@ -522,7 +524,7 @@ function viewAlertas(){
         ${pill(a.type, maint?"info":"bad")}
         <h3>${escapeHtml(a.load)}</h3>
         <p class="small muted">${escapeHtml(a.detail)}</p>
-        <button class="btn" data-review-alert="${escapeHtml(a.id)}">${icon("check","sm")}Marcar como revisada</button>
+        <span class="small muted">Reconocimiento persistente pendiente de implementación</span>
       </article>`;}).join("") || `<div class="card empty" style="grid-column:1/-1"><span class="chip">${icon("circle-check","lg")}</span><strong>Todo en orden</strong><span>No hay alertas activas con las lecturas actuales.</span></div>`}
     </div>
     <div class="gap"></div>
@@ -554,8 +556,7 @@ function viewRecomendaciones(){
               <span class="small muted">Puntaje = ahorro normalizado × criticidad × confianza</span></div>
           </div>
           <div class="actions">
-            <button class="btn primary" data-accept="${r.id}" ${done?"disabled":""}>${icon(done?"check":"circle-check","sm")}${done?"Aceptada":"Aceptar"}</button>
-            <button class="btn">${icon("hourglass","sm")}Posponer</button>
+            <span class="small muted">Ejemplo: decisiones persistentes pendientes</span>
           </div>
         </article>`;}).join("")}
     </section>
@@ -566,7 +567,7 @@ function viewControl(){
   const pending = recommendations.filter(r=>state.accepted.has(r.id));
   return layout(`
     <section class="card tint-good">
-      ${cardHead("shield-check","Control seguro por diseño","Las cargas críticas nunca se apagan. Toda acción de control requiere aprobación explícita.")}
+      ${cardHead("shield-check","Control en desarrollo","Esta pantalla es ilustrativa. No ejecuta ni aprueba órdenes. El servidor rechaza solicitudes sobre cargas críticas.")}
     </section>
     <h2 class="section-title">Acciones pendientes de aprobación</h2>
     <div class="table-wrap"><table>
@@ -575,7 +576,7 @@ function viewControl(){
       ${pending.map(r=>`<tr><td>${escapeHtml(r.action)}</td><td>${escapeHtml(r.load)}</td><td>${money(r.saving)}/mes</td><td>${pill("Pendiente","warn","hourglass")}</td>
         <td><button class="btn primary" data-approve="${r.id}">${icon("check","sm")}Aprobar</button></td></tr>`).join("") ||
         `<tr><td colspan="5" class="muted">Acepta una recomendación para crear una acción pendiente.</td></tr>`}
-      <tr><td>Apagar</td><td>Congelador vertical</td><td>—</td><td>${pill("Rechazada · crítica","bad","circle-x")}</td><td></td></tr>
+      <tr><td>Apagar</td><td>Congelador vertical</td><td>—</td><td>${pill("Ejemplo · crítica","bad","circle-x")}</td><td></td></tr>
       </tbody>
     </table></div>
     <div class="gap"></div>
@@ -716,7 +717,7 @@ function viewConfiguracion(){
       <section class="card">
         ${cardHead("wifi","Conectividad local","","info")}
         <div class="kpi-line"><span>Puerto</span><strong>${escapeHtml(state.info?.port || 3000)}</strong></div>
-        <div class="kpi-line"><span>Device key</span><strong><code>${escapeHtml(state.info?.device_key || "")}</code></strong></div>
+        <div class="kpi-line"><span>Clave de dispositivo</span><strong>${state.info?.device_key_configured ? "Configurada" : "No configurada"}</strong></div>
         <div class="kpi-line"><span>Fuente actual</span><strong>${state.telemetry?.source==="esp32"?"ESP32":"Simulador"}</strong></div>
       </section>
     </div>
@@ -732,7 +733,7 @@ function viewDemo(){
     <div class="gap"></div>
     <div class="demo-grid">
       <section class="card demo-tool">${cardHead("plug","Conectar ESP32","Usa esta URL en el firmware:","info")}<div class="endpoint">${escapeHtml(endpoint)}</div><button class="btn" data-action="copy-endpoint">${icon("copy","sm")}Copiar endpoint</button></section>
-      <section class="card demo-tool tint-warn">${cardHead("cpu","Simulador","Si aún no llegó hardware, la página genera cargas virtuales automáticamente.","warn")}<button class="btn" data-action="reset-source">${icon("refresh-cw","sm")}Volver al simulador</button></section>
+      <section class="card demo-tool tint-warn">${cardHead("cpu","Simulador","Si aún no llegó hardware, la página genera cargas virtuales automáticamente.","warn")}</section>
       <section class="card demo-tool tint-bad">${cardHead("shield-check","Seguridad","Demuestra que una carga crítica no puede apagarse.","bad")}<button class="btn danger" data-action="critical-off">${icon("power","sm")}Intentar apagar congelador</button></section>
       <section class="card demo-tool">${cardHead("code-xml","API","Salud del servidor y direcciones de red local.","info")}<div class="codebox" tabindex="0" aria-label="Información del servidor en JSON">${escapeHtml(JSON.stringify(state.info,null,2))}</div></section>
     </div>
@@ -840,7 +841,7 @@ async function fetchTelemetry(){
   }
 }
 async function resetSource(){
-  await fetch("/api/reset",{method:"POST"});
+  await fetch("/api/reset",{method:"POST",headers:{"x-csrf-token":state.csrf}});
   await fetchTelemetry();
 }
 function cycleRole(){
@@ -873,7 +874,10 @@ document.addEventListener("click", async (event)=>{
   if(action==="download-csv") exportCsv();
   if(action==="download-json") exportJson();
   if(action==="reset-source") await resetSource();
-  if(action==="critical-off") toast("RECHAZADO: el congelador es una carga crítica y permanece energizado.");
+  if(action==="critical-off") {
+    const r=await fetch('/api/control/requests',{method:'POST',headers:{'content-type':'application/json','x-csrf-token':state.csrf},body:JSON.stringify({site_id:'la-espiga-chia',load_id:'freezer',action:'off'})});
+    const result=await r.json(); toast(result.error || 'Solicitud procesada.');
+  }
   if(action==="copy-endpoint"){
     const text=state.info?.telemetry_urls?.[0] || "";
     try{ await navigator.clipboard?.writeText(text); }catch(e){}
@@ -900,6 +904,24 @@ window.addEventListener("resize", ()=>{
 });
 
 (async function init(){
+  async function authenticate(){
+    let response = await fetch('/api/auth/me');
+    if (!response.ok) {
+      const root=document.getElementById('app');
+      root.innerHTML=`<main style="max-width:420px;margin:10vh auto;padding:24px" class="card"><h1>Ingresar a VATIO</h1><p>Usa el usuario configurado para esta instalación.</p><form id="login-form"><div class="field"><label for="username">Usuario</label><input id="username" autocomplete="username" required></div><div class="field"><label for="password">Contraseña</label><input id="password" type="password" autocomplete="current-password" required></div><p id="login-error" role="alert"></p><button class="btn primary" type="submit">Ingresar</button></form></main>`;
+      response = await new Promise(resolve => {
+        document.getElementById('login-form').addEventListener('submit', async event => {
+          event.preventDefault();
+          try {
+            const r=await fetch('/api/auth/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({username:document.getElementById('username').value,password:document.getElementById('password').value})});
+            if(r.ok) resolve(r); else document.getElementById('login-error').textContent='No fue posible iniciar sesión.';
+          } catch { document.getElementById('login-error').textContent='No se pudo conectar con el servidor.'; }
+        });
+      });
+    }
+    const user=await response.json(); state.role=user.role; state.csrf=user.csrf;
+  }
+  await authenticate();
   render({force:true});
   await fetchInfo();
   await fetchTelemetry();
