@@ -1,0 +1,13 @@
+{
+  "name": "vatio-local-demo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Vatio local dashboard + ESP32 telemetry API",
+  "scripts": {
+    "start": "node server.js",
+    "check": "node --check server.js && node --check public/app.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

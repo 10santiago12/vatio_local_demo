@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#0a1218" />
+  <title>Vatio · Gestión energética</title>
+  <script>
+    /* Apply the saved theme before first paint (no flash). Dark is the default.
+       ?theme=light|dark overrides it for this load only (used for screenshots). */
+    (function () {
+      var theme = "dark";
+      try {
+        var q = new URLSearchParams(location.search).get("theme");
+        var saved = localStorage.getItem("vatio_theme");
+        theme = q || saved || "dark";
+      } catch (e) {}
+      theme = theme === "light" ? "light" : "dark";
+      document.documentElement.setAttribute("data-theme", theme);
+      var meta = document.querySelector('meta[name="theme-color"]');
+      if (meta) meta.setAttribute("content", theme === "light" ? "#dff3e8" : "#0a1218");
+    })();
+  </script>
+  <link rel="preload" href="/vendor/manrope-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="preload" href="/vendor/manrope-latin-700-normal.woff2" as="font" type="font/woff2" crossorigin />
+  <link rel="stylesheet" href="/vendor/uPlot.min.css" />
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div id="app"></div>
+  <div id="toast-root" role="status" aria-live="polite"></div>
+  <script src="/vendor/uPlot.iife.min.js"></script>
+  <script src="/app.js"></script>
+</body>
+</html>
