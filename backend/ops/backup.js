@@ -19,6 +19,15 @@ const NAME = /^vatio-\d{8}-\d{9}\.sqlite$/;
 const sha256 = (file) => crypto.createHash('sha256').update(fs.readFileSync(file)).digest('hex');
 const sidecar = (file) => `${file}.sha256`;
 
+/** Makes the copy a single self-contained file (no -wal/-shm companions) and returns its integrity result. */
+function finalizeCopy(file) {
+  const copy = new DatabaseSync(file);
+  try {
+    copy.exec('PRAGMA journal_mode = DELETE');
+    return copy.prepare('PRAGMA integrity_check').get().integrity_check;
+  } finally { copy.close(); }
+}
+
 function integrityOf(file) {
   const copy = new DatabaseSync(file, { readOnly: true });
   try { return copy.prepare('PRAGMA integrity_check').get().integrity_check; } finally { copy.close(); }
@@ -59,7 +68,7 @@ async function createBackup({ db, dir, keep = 7, now = () => new Date() }) {
   const partial = `${file}.partial`;
   try {
     await backup(db, partial);
-    const integrity = integrityOf(partial);
+    const integrity = finalizeCopy(partial);
     if (integrity !== 'ok') throw new Error(`La copia no pasó la verificación de integridad: ${integrity}`);
     fs.renameSync(partial, file);
   } catch (error) {

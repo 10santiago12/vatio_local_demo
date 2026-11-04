@@ -26,6 +26,7 @@ test('backup then restore returns exactly the backed-up data after the database 
   assert.match(made.name, /^vatio-\d{8}-\d{9}\.sqlite$/);
   assert.equal(made.sha256.length, 64);
   assert.ok(verifyBackup(made.file).ok);
+  assert.deepEqual(fs.readdirSync(path.join(dir, 'bk')).sort(), [made.name, `${made.name}.sha256`]); // no -wal/-shm/.partial leftovers
   db.prepare('DELETE FROM t').run();
   db.prepare("INSERT INTO t(v) VALUES('after')").run();
   db.close();
