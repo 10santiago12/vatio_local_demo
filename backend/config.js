@@ -96,6 +96,11 @@ function buildConfig(env = process.env) {
   const demoFlag = String(env.VATIO_ENABLE_DEMO_PANEL || '').trim().toLowerCase();
   if (demoFlag && !['yes', 'no'].includes(demoFlag)) problems.push('VATIO_ENABLE_DEMO_PANEL debe ser "yes" o "no".');
   const demoPanelEnabled = demoFlag ? demoFlag === 'yes' : !production;
+  // Backups: directory, how many to keep and the schedule (hours; 0 = off). Scheduled by default only in production.
+  const backupKeep = env.VATIO_BACKUP_KEEP === undefined || env.VATIO_BACKUP_KEEP === '' ? 7 : Number(env.VATIO_BACKUP_KEEP);
+  if (!Number.isInteger(backupKeep) || backupKeep < 1 || backupKeep > 365) problems.push('VATIO_BACKUP_KEEP debe ser un entero entre 1 y 365.');
+  const backupIntervalHours = env.VATIO_BACKUP_INTERVAL_HOURS === undefined || env.VATIO_BACKUP_INTERVAL_HOURS === '' ? (production ? 6 : 0) : Number(env.VATIO_BACKUP_INTERVAL_HOURS);
+  if (!Number.isFinite(backupIntervalHours) || backupIntervalHours < 0 || backupIntervalHours > 720) problems.push('VATIO_BACKUP_INTERVAL_HOURS debe ser un número entre 0 y 720 (0 desactiva los respaldos programados).');
   if (problems.length) throw new ConfigError(problems);
 
   return Object.freeze({
@@ -107,6 +112,9 @@ function buildConfig(env = process.env) {
     adminPassword,
     deviceKey,
     dbPath: env.VATIO_DB ? path.resolve(env.VATIO_DB) : path.join(ROOT_DIR, 'data', 'vatio.sqlite'),
+    backupDir: env.VATIO_BACKUP_DIR ? path.resolve(env.VATIO_BACKUP_DIR) : path.join(ROOT_DIR, 'data', 'backups'),
+    backupKeep,
+    backupIntervalHours,
     /** Secure cookies in production, behind an HTTPS proxy, or over direct TLS. */
     secureCookie(req) {
       const forwarded = String(req?.headers?.['x-forwarded-proto'] || '').split(',')[0].trim().toLowerCase();

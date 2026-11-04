@@ -30,6 +30,7 @@ const { createModules } = require('./app/modules');
 const { createDemo } = require('./app/demo');
 const { createValue } = require('./app/value');
 const { createDataExchange } = require('./app/data-exchange');
+const { createMetrics, requestLine } = require('./ops/request-log');
 
 /** Clock port whose implementation can be swapped (system <-> simulated). */
 function createClockHolder(initial) {
@@ -52,11 +53,18 @@ function createRuntime({ config, db, wallNow = Date.now }) {
   const clock = createClockHolder(new SystemClock());
   const siteId = MAIN_SITE_ID;
 
-  function logError(source, error, context) {
+  const metrics = createMetrics({ now: Date.now });
+  const logRequest = (entry) => {
+    if (!config.quiet) console.log(requestLine({ at: new Date().toISOString(), ...entry }));
+  };
+
+  /** Writes an unhandled error to `error_log` (message, stack, route, request id, role) and one JSON line to stderr. */
+  function logError(source, error, context = {}) {
+    const { requestId = null, ...rest } = context || {};
     try {
-      repos.errors.log({ at: new Date(clock.now()).toISOString(), source, message: error.message, stack: error.stack, context });
+      repos.errors.log({ at: new Date(wallNow()).toISOString(), source, message: error.message, stack: error.stack, context: rest, requestId });
     } catch { /* the error log itself failed */ }
-    if (!config.quiet) console.error(`${source}: ${error.message}`);
+    if (!config.quiet) console.error(JSON.stringify({ at: new Date().toISOString(), level: 'error', source, message: error.message, request_id: requestId }));
   }
 
   // Bootstrap administrator (password from the environment, never a default).
@@ -91,7 +99,7 @@ function createRuntime({ config, db, wallNow = Date.now }) {
   const value = createValue({ repos, clock, analytics });
   const data = createDataExchange({ repos, clock, access, analytics });
   const app = {
-    config, db, repos, clock, siteId, wallNow, state, logError,
+    config, db, repos, clock, siteId, wallNow, state, logError, logRequest, metrics,
     ingestion, access, auth, analytics, users, settings, control, recommendations, alerts, operations, value, data,
     scenario: () => state.scenario,
     close() { db.close(); },

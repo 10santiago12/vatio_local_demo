@@ -6,6 +6,7 @@
  * state-changing method without the CSRF token -> 403, a role without the permission -> 403 with a
  * plain-Spanish message and an audit row, then the handler.
  */
+const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
 const { URL } = require('node:url');
@@ -76,14 +77,23 @@ function createDispatcher({ router, app }) {
   return async function handle(req, res) {
     const url = new URL(req.url, `http://${req.headers.host || 'localhost'}`);
     const pathname = url.pathname;
+    const requestId = crypto.randomBytes(8).toString('hex');
+    const startedAt = process.hrtime.bigint();
+    let user = null;
+    let matched = null;
+    res.setHeader('X-Request-Id', requestId);
+    res.on('finish', () => {
+      const ms = Math.round(Number(process.hrtime.bigint() - startedAt) / 1e4) / 100;
+      app.metrics.record(res.statusCode, ms);
+      app.logRequest({ requestId, method: req.method, path: pathname, status: res.statusCode, ms, role: user ? user.roleCode : null });
+    });
     try {
       if (req.method === 'OPTIONS') { res.writeHead(204); return res.end(); }
       const isApi = pathname.startsWith('/api/');
-      const matched = router.match(req.method, pathname);
+      matched = router.match(req.method, pathname);
       if (!isApi) return serveStatic(res, pathname);
 
       const options = matched ? matched.route.options : {};
-      let user = null;
       if (!options.public) {
         user = app.auth.session(req);
         if (!user) throw new HttpError(401, 'Autenticación requerida.', 'unauthenticated');
@@ -112,7 +122,7 @@ function createDispatcher({ router, app }) {
       return send(res, result.status, result.body, 'application/json; charset=utf-8', result.headers);
     } catch (error) {
       if (error instanceof HttpError) return send(res, error.status, { error: error.message, code: error.code, ...error.extra });
-      app.logError('http', error, { method: req.method, path: pathname });
+      app.logError('http', error, { method: req.method, path: pathname, route: matched ? matched.route.pattern : null, requestId, role: user ? user.roleCode : null });
       return send(res, 500, { error: 'Ocurrió un problema inesperado. Intente de nuevo en unos minutos.', code: 'internal_error' });
     }
   };
