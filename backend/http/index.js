@@ -4,7 +4,7 @@ const http = require('node:http');
 const { createRouter } = require('./router');
 const { createDispatcher } = require('./dispatcher');
 
-const AREAS = ['telemetry', 'auth', 'admin', 'operations', 'control', 'demo'];
+const AREAS = ['telemetry', 'auth', 'admin', 'operations', 'control', 'demo', 'value'];
 
 /** @returns {{router: object, server: import('http').Server}} */
 function createHttpServer(app) {

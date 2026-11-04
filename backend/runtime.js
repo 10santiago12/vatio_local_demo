@@ -28,6 +28,7 @@ const { createAlerts } = require('./app/alerts');
 const { createOperations } = require('./app/operations');
 const { createModules } = require('./app/modules');
 const { createDemo } = require('./app/demo');
+const { createValue } = require('./app/value');
 
 /** Clock port whose implementation can be swapped (system <-> simulated). */
 function createClockHolder(initial) {
@@ -86,9 +87,10 @@ function createRuntime({ config, db, wallNow = Date.now }) {
   const recommendations = createRecommendations({ repos, clock, analytics, access, control });
   const alerts = createAlerts({ repos, clock, analytics, access });
   const operations = createOperations({ repos, clock, analytics, recommendations });
+  const value = createValue({ repos, clock, analytics });
   const app = {
     config, db, repos, clock, siteId, wallNow, state, logError,
-    ingestion, access, auth, analytics, users, settings, control, recommendations, alerts, operations,
+    ingestion, access, auth, analytics, users, settings, control, recommendations, alerts, operations, value,
     scenario: () => state.scenario,
     close() { db.close(); },
   };
