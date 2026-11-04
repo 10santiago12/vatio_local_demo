@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const root = path.join(__dirname, '..');
-const skip = new Set(['node_modules', '.git', 'data']);
+const skip = new Set(['node_modules', '.git', 'data', 'results']);
 
 function walk(dir, files = []) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
