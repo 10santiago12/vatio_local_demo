@@ -5,9 +5,10 @@
   "description": "Vatio local dashboard + ESP32 telemetry API",
   "scripts": {
     "start": "node server.js",
-    "check": "node --check server.js && node --check public/app.js"
+    "check": "node --check server.js && node --check public/app.js && node --check backend/security.js",
+    "test": "node --test tests/*.test.js"
   },
   "engines": {
-    "node": ">=18"
+    "node": ">=24"
   }
 }

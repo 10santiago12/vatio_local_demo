@@ -5,8 +5,8 @@ const os = require("os");
 const { URL } = require("url");
 
 const PORT = Number(process.env.PORT || 3000);
-const HOST = process.env.HOST || "0.0.0.0";
-const DEVICE_KEY = process.env.VATIO_DEVICE_KEY || "vatio-demo-2026";
+const HOST = process.env.HOST || "127.0.0.1";
+const DEVICE_KEY = process.env.VATIO_DEVICE_KEY || "";
 
 const PUBLIC_DIR = path.join(__dirname, "public");
 const DATA_DIR = path.join(__dirname, "data");
@@ -15,6 +15,7 @@ const MAX_BODY_BYTES = 2 * 1024 * 1024;
 const MAX_HISTORY = 2500;
 
 fs.mkdirSync(DATA_DIR, { recursive: true });
+const security = require('./backend/security');
 
 const latestByModule = new Map();
 const history = [];
@@ -23,6 +24,12 @@ let gatewayState = {
   site_id: "la-espiga-chia",
   last_received_at: null
 };
+for (const row of security.db.prepare('SELECT site_id,gateway_id,received_at,reading FROM telemetry ORDER BY id DESC LIMIT ?').all(MAX_HISTORY).reverse()) {
+  const reading = JSON.parse(row.reading);
+  latestByModule.set(reading.module_id, reading);
+  history.push({site_id:row.site_id,gateway_id:row.gateway_id,...reading});
+  gatewayState = {site_id:row.site_id,gateway_id:row.gateway_id,last_received_at:row.received_at};
+}
 
 function localIPv4Addresses() {
   const nets = os.networkInterfaces();
@@ -42,10 +49,7 @@ function sendJson(res, status, payload) {
   res.writeHead(status, {
     "Content-Type": "application/json; charset=utf-8",
     "Content-Length": Buffer.byteLength(body),
-    "Cache-Control": "no-store",
-    "Access-Control-Allow-Origin": "*",
-    "Access-Control-Allow-Headers": "Content-Type, X-Device-Key",
-    "Access-Control-Allow-Methods": "GET,POST,OPTIONS"
+    "Cache-Control": "no-store"
   });
   res.end(body);
 }
@@ -75,10 +79,11 @@ function mimeType(filePath) {
 
 function serveStatic(req, res, pathname) {
   let relative = pathname === "/" ? "/index.html" : pathname;
-  relative = decodeURIComponent(relative);
+  try { relative = decodeURIComponent(relative); } catch { return sendText(res, 400, 'Bad request'); }
   const resolved = path.normalize(path.join(PUBLIC_DIR, relative));
 
-  if (!resolved.startsWith(PUBLIC_DIR)) {
+  const withinPublic = path.relative(PUBLIC_DIR, resolved);
+  if (withinPublic.startsWith('..') || path.isAbsolute(withinPublic)) {
     sendText(res, 403, "Forbidden");
     return;
   }
@@ -139,6 +144,9 @@ function ingest(payload) {
   }
 
   const normalized = readings.map((reading) => normalizeReading(reading, receivedAt));
+  if (payload.site_id !== 'la-espiga-chia' || payload.gateway_id !== 'ESP32-DEMO-01') throw new Error('Gateway o sede no autorizados.');
+  if (readings.some(r => !r || typeof r.module_id !== 'string' || typeof r.load_id !== 'string' || typeof r.power_w !== 'number' || !Number.isFinite(r.power_w) || r.power_w < 0)) throw new Error('Lectura inválida.');
+  security.saveReadings(payload.site_id, payload.gateway_id, receivedAt, normalized);
   gatewayState = {
     gateway_id: String(payload.gateway_id || "ESP32").slice(0, 80),
     site_id: String(payload.site_id || "la-espiga-chia").slice(0, 80),
@@ -152,14 +160,6 @@ function ingest(payload) {
   if (history.length > MAX_HISTORY) {
     history.splice(0, history.length - MAX_HISTORY);
   }
-
-  const logLine = JSON.stringify({
-    gateway_id: gatewayState.gateway_id,
-    site_id: gatewayState.site_id,
-    received_at: receivedAt,
-    readings: normalized
-  }) + "\n";
-  fs.appendFile(LOG_FILE, logLine, () => {});
 
   return { receivedAt, normalized };
 }
@@ -244,12 +244,44 @@ const server = http.createServer(async (req, res) => {
   const url = new URL(req.url, `http://${req.headers.host || "localhost"}`);
   const pathname = url.pathname;
 
+  if (pathname === '/api/auth/login' && req.method === 'POST') {
+    try {
+      const payload = JSON.parse(await readBody(req));
+      const result = security.login(payload.username, payload.password, req.socket.remoteAddress);
+      if (!result) return sendJson(res, 401, {error:'Credenciales inválidas.'});
+      if (result.limited) return sendJson(res, 429, {error:'Demasiados intentos.'});
+      res.setHeader('Set-Cookie', `vatio_session=${result.id}; HttpOnly; SameSite=Strict; Path=/; Max-Age=28800${req.socket.encrypted ? '; Secure' : ''}`);
+      return sendJson(res, 200, {username:result.username, role:result.role, csrf:result.csrf});
+    } catch { return sendJson(res,400,{error:'Solicitud inválida.'}); }
+  }
+
+  if (pathname.startsWith('/api/') && !['/api/health','/api/telemetry'].includes(pathname)) {
+    const user = security.session(req);
+    if (!user) return sendJson(res, 401, {error:'Autenticación requerida.'});
+    if (!['GET','HEAD'].includes(req.method) && req.headers['x-csrf-token'] !== user.csrf) return sendJson(res,403,{error:'CSRF inválido.'});
+    if (pathname === '/api/auth/me' && req.method === 'GET') return sendJson(res,200,{username:user.username,role:user.role,csrf:user.csrf});
+    if (pathname === '/api/control/requests' && req.method === 'POST') {
+      try {
+        const request=JSON.parse(await readBody(req));
+        if (request.site_id !== 'la-espiga-chia') return sendJson(res,403,{error:'Sede no autorizada.'});
+        if (request.action !== 'off' || !['freezer','fridge','pos','oven','coffee','ac','sign','tv'].includes(request.load_id)) return sendJson(res,400,{error:'Solicitud inválida.'});
+        if (['freezer','fridge','pos'].includes(request.load_id)) {
+          security.audit(user.username,'control_rejected',request.site_id,{load_id:request.load_id,reason:'critical'});
+          return sendJson(res,422,{error:'Carga crítica: acción rechazada.'});
+        }
+        if (gatewayState.last_received_at && Date.now() - Date.parse(gatewayState.last_received_at) > 120000) {
+          security.audit(user.username,'control_rejected',request.site_id,{load_id:request.load_id,reason:'communication_lost'});
+          return sendJson(res,422,{error:'Pérdida de comunicación con el gateway.'});
+        }
+        const result=security.db.prepare('INSERT INTO control_requests(site_id,load_id,action,status,requested_by,created_at) VALUES(?,?,?,?,?,?)').run(request.site_id,request.load_id,request.action,'pending',user.username,new Date().toISOString());
+        security.audit(user.username,'control_requested',request.site_id,{load_id:request.load_id});
+        return sendJson(res,201,{id:Number(result.lastInsertRowid),status:'pending',simulated:true});
+      } catch { return sendJson(res,400,{error:'Solicitud inválida.'}); }
+    }
+  }
+
   if (req.method === "OPTIONS") {
-    res.writeHead(204, {
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Headers": "Content-Type, X-Device-Key",
-      "Access-Control-Allow-Methods": "GET,POST,OPTIONS"
-    });
+    res.writeHead(204);
     res.end();
     return;
   }
@@ -273,7 +305,7 @@ const server = http.createServer(async (req, res) => {
       local_ips: ips,
       browser_urls: ips.map(ip => `http://${ip}:${PORT}/`),
       telemetry_urls: ips.map(ip => `http://${ip}:${PORT}/api/telemetry`),
-      device_key: DEVICE_KEY
+      device_key_configured: Boolean(DEVICE_KEY)
     });
     return;
   }
@@ -293,7 +325,7 @@ const server = http.createServer(async (req, res) => {
   }
 
   if (pathname === "/api/telemetry" && req.method === "POST") {
-    if (req.headers["x-device-key"] !== DEVICE_KEY) {
+    if (!DEVICE_KEY || req.headers["x-device-key"] !== DEVICE_KEY) {
       sendJson(res, 401, { ok: false, error: "X-Device-Key inválida." });
       return;
     }
@@ -335,7 +367,7 @@ server.listen(PORT, HOST, () => {
     console.log(` Red local:             http://${ip}:${PORT}`);
     console.log(` ESP32 POST:            http://${ip}:${PORT}/api/telemetry`);
   }
-  console.log(` X-Device-Key:          ${DEVICE_KEY}`);
+  console.log(` Clave de dispositivo configurada: ${Boolean(DEVICE_KEY)}`);
   console.log("======================================================");
   console.log("");
   console.log("Si el ESP32 no puede conectarse, revisa el Firewall de Windows");
