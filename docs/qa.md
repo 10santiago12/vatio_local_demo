@@ -116,3 +116,14 @@ Procedimiento: mostrar cada mensaje sin explicarlo y preguntar "¿qué entiende 
 Datos de los usuarios: ______________________________. Criterio: se cumple si cada usuario comprende todos los mensajes sin ayuda. Resultado: ____
 
 Reglas de aplicación: no ayudar ni explicar durante la prueba, registrar frases textuales, y pedir consentimiento para anotar las respuestas.
+
+
+## Resultados en dispositivo real: iPhone (Safari)
+
+| Dispositivo | Sistema | Navegador | Fecha | Resultado | Evidencia |
+|---|---|---|---|---|---|
+| iPhone 14 Pro | iOS 27.2 | Safari | 4 de noviembre de 2026 | Todo funciona bien, según la persona que hizo la prueba | `docs/qa-evidencia/iphone-01` a `iphone-07` |
+
+Las capturas documentan: inicio de sesión con clave incorrecta (mensaje de error), pantallas Inicio, Operaciones, Alertas y Ahorro y retorno, barra inferior y menú «Más», y la vista en horizontal. Se probó contra la aplicación desplegada en https://vatio-ot3j.onrender.com/. No se registraron por captura el cambio de tema ni el cierre de sesión en este dispositivo.
+
+Pendiente opcional: repetir en Android (Chrome).
