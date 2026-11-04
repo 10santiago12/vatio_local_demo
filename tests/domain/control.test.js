@@ -34,7 +34,7 @@ test('module communication state: boundaries at 2 and 5 minutes, never seen is o
 test('rule 1/4: without approval a manual action on a monitor-only load stays pending and nothing executes', () => {
   const d = decide();
   assert.equal(d.outcome, 'pending');
-  assert.equal(d.reason, 'awaiting_approval');
+  assert.equal(d.reason, 'monitor_only_pending');
   assert.equal(d.nextPowerState, 'on');
   assert.equal(d.loadStaysEnergized, true);
   assert.equal(d.audit.result, null);
@@ -51,17 +51,18 @@ test('processes without approval on a monitor-only load are rejected (no autonom
   }
 });
 
-test('explicit approval executes on a monitor-only load', () => {
-  const d = decide({ approved: true });
-  assert.equal(d.outcome, 'executed');
-  assert.equal(d.reason, 'approved');
-  assert.equal(d.nextPowerState, 'off');
-  assert.equal(d.loadStaysEnergized, false);
-  assert.equal(d.audit.result, 'executed');
-  assert.equal(d.audit.approved, true);
-  assert.equal(d.audit.actor, 'ana');
-  assert.equal(d.audit.at, NOW);
-  assert.equal(d.audit.flagged, false);
+test('an approved action on a monitor-only load never executes: it stays pending and tells the admin to enable control', () => {
+  for (const origin of ['manual', 'recommendation', 'closing_mode', 'autonomous']) {
+    for (const action of ['on', 'off']) {
+      const d = decide({ approved: true, origin, action });
+      assert.equal(d.outcome, 'pending', origin);
+      assert.equal(d.reason, 'monitor_only_pending');
+      assert.equal(d.nextPowerState, 'on');
+      assert.equal(d.audit.result, null);
+      assert.equal(d.audit.approved, true);
+      assert.match(d.message, /habilite el control en Configuración/);
+    }
+  }
 });
 
 test('autonomous control executes without approval, on and off', () => {
@@ -96,8 +97,8 @@ test('rule 3: switching a critical load off is rejected and flagged for audit in
 
 test('switching a critical load ON is not blocked by the critical rule', () => {
   const l = load({ criticality: 'critical', powerState: 'off' });
-  assert.equal(decide({ load: l, action: 'on', approved: true }).outcome, 'executed');
-  assert.equal(decide({ load: l, action: 'on' }).outcome, 'pending');
+  assert.equal(decide({ load: { ...l, controlMode: 'control_enabled' }, action: 'on' }).outcome, 'executed');
+  assert.equal(decide({ load: l, action: 'on', approved: true }).outcome, 'pending');
 });
 
 test('rule 5 (safe state): a module silent for more than 5 minutes discards the action and keeps the load energized', () => {
@@ -116,7 +117,7 @@ test('a missing module state is treated as offline (fail safe)', () => {
   assert.equal(decide({ moduleState: undefined, approved: true }).outcome, 'discarded');
   assert.equal(decide({ moduleState: 'garbage', approved: true }).outcome, 'discarded');
   assert.equal(decide({ moduleState: { state: 'offline' }, approved: true }).outcome, 'discarded');
-  assert.equal(decide({ moduleState: { state: 'healthy' }, approved: true }).outcome, 'executed');
+  assert.equal(decide({ load: load({ controlMode: 'control_enabled' }), moduleState: { state: 'healthy' } }).outcome, 'executed');
 });
 
 test('an inactive module (2-5 minutes) never executes: the action stays pending', () => {

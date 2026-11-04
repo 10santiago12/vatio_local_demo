@@ -11,9 +11,10 @@
  *     action is discarded with a reason. A module silent between 2 and 5 minutes is "inactive":
  *     nothing is executed and the action stays pending.
  *  3. A load with `control_enabled` ("autonomous control") executes without approval.
- *  4. A `monitor_only` load never acts alone. Without explicit approval a manual or recommended
- *     action stays PENDING, and an automatic process (closing mode, autonomous) is REJECTED because
- *     it has no autonomy there. With explicit approval by a person the action executes.
+ *  4. A `monitor_only` load NEVER executes a control action, not even an approved one (spec: "la
+ *     acción queda pendiente y no se ejecuta"). A manual or recommended action stays PENDING with a
+ *     reason telling the admin to enable control in Configuración; an automatic process (closing
+ *     mode, autonomous) without approval is REJECTED because it has no autonomy there.
  *  5. New loads default to monitor_only + essential (`newLoadDefaults`).
  * Closing mode switches off only loads that are non-essential AND control_enabled AND whose module
  * is healthy; critical and essential loads are never switched off.
@@ -119,14 +120,13 @@ function decideControlAction(input) {
   if (load.controlMode === CONTROL_MODE.CONTROL_ENABLED) {
     return build(load, input, CONTROL_OUTCOME.EXECUTED, 'autonomous_control', `${name}: acción ejecutada por control automático habilitado.`);
   }
-  if (input.approved === true) {
-    return build(load, input, CONTROL_OUTCOME.EXECUTED, 'approved', `${name}: acción ejecutada con aprobación.`);
-  }
-  if (input.origin === CONTROL_ORIGIN.AUTONOMOUS || input.origin === CONTROL_ORIGIN.CLOSING_MODE) {
+  // From here the load is monitor_only: nothing executes, approved or not.
+  if (input.approved !== true && (input.origin === CONTROL_ORIGIN.AUTONOMOUS || input.origin === CONTROL_ORIGIN.CLOSING_MODE)) {
     return build(load, input, CONTROL_OUTCOME.REJECTED, 'autonomy_not_enabled',
       `${name} está en solo monitoreo: el sistema no puede actuar por su cuenta sobre este equipo.`);
   }
-  return build(load, input, CONTROL_OUTCOME.PENDING, 'awaiting_approval', `${name}: la acción queda pendiente hasta que alguien la apruebe.`);
+  return build(load, input, CONTROL_OUTCOME.PENDING, 'monitor_only_pending',
+    `${name}: carga en solo monitoreo, habilite el control en Configuración. La acción queda pendiente y no se ejecuta.`);
 }
 
 /**
