@@ -60,7 +60,7 @@ test('upgrade from a database created by migration 001 keeps existing rows', () 
       INSERT INTO audit(at, actor, event, site_id, details) VALUES ('2026-01-01T00:00:00Z', 'admin', 'login', NULL, '{}');
       INSERT INTO control_requests(site_id, load_id, action, status, requested_by, created_at) VALUES ('la-espiga-chia', 'oven', 'off', 'pending', 'admin', '2026-01-01T00:00:00Z');`);
     const result = migrate(db);
-    assert.deepEqual(result.applied.map((n) => n.slice(0, 3)), ['002', '003', '004', '005']);
+    assert.deepEqual(result.applied.map((n) => n.slice(0, 3)), ['002', '003', '004', '005', '006', '007']);
     const users = db.prepare('SELECT username, role, active FROM users ORDER BY id').all();
     assert.equal(users[0].role, 'owner');
     assert.equal(users[1].role, 'non_technical_employee');

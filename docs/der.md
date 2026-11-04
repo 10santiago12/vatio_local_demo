@@ -15,6 +15,8 @@ Imagen rasterizada: [`der.png`](der.png). Vector: [`der.svg`](der.svg). Fuente M
 | `003_loads_modules_readings.sql` | Cargas, módulos de medición, lecturas crudas y agregados por hora. |
 | `004_analysis_and_control.sql` | Línea base, alertas, recomendaciones y acciones de control; extiende `audit` en el lugar. |
 | `005_events_and_errors.sql` | Eventos de analítica y registro de errores. |
+| `006_tariff_note.sql` | Columna `note` en `tariffs` (la tarifa de demostración se marca como ejemplo). |
+| `007_legacy_telemetry_to_readings.sql` | Migra la tabla `telemetry` del primer MVP a sedes, cargas, módulos y lecturas. Omite las filas inválidas y conserva `telemetry` como archivo; la aplicación ya no escribe en ella. |
 
 El ejecutor (`backend/db/migrate.js`) aplica cada archivo en orden dentro de una transacción, lo registra en `schema_migrations` con su checksum SHA-256 (normalizando saltos de línea) y es idempotente. Si un archivo ya aplicado fue modificado o eliminado, se niega a continuar: todo cambio de esquema debe ser una migración nueva. Tras cada migración se verifica `PRAGMA foreign_key_check`.
 
@@ -325,6 +327,7 @@ erDiagram
     string effective_from
     int created_by FK
     string created_at
+    string note
   }
   telemetry {
     int id PK

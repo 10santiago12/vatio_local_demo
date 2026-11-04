@@ -24,7 +24,7 @@ function createReferenceRepositories(db) {
     revoke: db.prepare('DELETE FROM user_sites WHERE user_id = ? AND site_id = ?'),
     userSites: db.prepare('SELECT s.* FROM sites s JOIN user_sites us ON us.site_id = s.id WHERE us.user_id = ? ORDER BY s.name'),
 
-    tariffInsert: db.prepare('INSERT INTO tariffs(site_id, cop_per_kwh, effective_from, created_by) VALUES(?,?,?,?)'),
+    tariffInsert: db.prepare('INSERT INTO tariffs(site_id, cop_per_kwh, effective_from, created_by, note) VALUES(?,?,?,?,?)'),
     tariffs: db.prepare('SELECT * FROM tariffs WHERE site_id = ? ORDER BY effective_from'),
     tariffAt: db.prepare('SELECT * FROM tariffs WHERE site_id = ? AND effective_from <= ? ORDER BY effective_from DESC LIMIT 1'),
 
@@ -63,8 +63,8 @@ function createReferenceRepositories(db) {
       sitesFor: (userId) => q.userSites.all(userId)
     },
     tariffs: {
-      create({ siteId, copPerKwh, effectiveFrom, createdBy = null }) {
-        const result = q.tariffInsert.run(siteId, copPerKwh, effectiveFrom, createdBy);
+      create({ siteId, copPerKwh, effectiveFrom, createdBy = null, note = null }) {
+        const result = q.tariffInsert.run(siteId, copPerKwh, effectiveFrom, createdBy, note);
         return Number(result.lastInsertRowid);
       },
       list: (siteId) => q.tariffs.all(siteId),

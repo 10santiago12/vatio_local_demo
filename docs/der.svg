@@ -68,14 +68,14 @@
 <line x1="1270.0" y1="696.7" x2="661.3" y2="189.0" stroke="#148c4f" stroke-width="1.6"/>
 <text x="1209.1" y="641.9" font-size="11" font-weight="700" fill="#0e6b3b">N</text>
 <text x="722.2" y="235.8" font-size="11" font-weight="700" fill="#0e6b3b">1</text>
-<line x1="488.7" y1="552.0" x2="301.6" y2="395.0" stroke="#b6c2bb" stroke-dasharray="4 4" stroke-width="1"/>
-<line x1="590.0" y1="552.0" x2="590.0" y2="189.0" stroke="#148c4f" stroke-width="1.6"/>
-<text x="590.0" y="511.7" font-size="11" font-weight="700" fill="#0e6b3b">1</text>
-<text x="590.0" y="221.3" font-size="11" font-weight="700" fill="#0e6b3b">0..1</text>
+<line x1="493.5" y1="569.0" x2="295.8" y2="395.0" stroke="#b6c2bb" stroke-dasharray="4 4" stroke-width="1"/>
+<line x1="590.0" y1="569.0" x2="590.0" y2="189.0" stroke="#148c4f" stroke-width="1.6"/>
+<text x="590.0" y="527.0" font-size="11" font-weight="700" fill="#0e6b3b">1</text>
+<text x="590.0" y="223.0" font-size="11" font-weight="700" fill="#0e6b3b">0..1</text>
 <line x1="590.0" y1="225.0" x2="590.0" y2="189.0" stroke="#148c4f" stroke-width="1.6"/>
 <text x="590.0" y="217.4" font-size="11" font-weight="700" fill="#0e6b3b">N</text>
 <text x="590.0" y="188.6" font-size="11" font-weight="700" fill="#0e6b3b">1</text>
-<line x1="450.0" y1="395.1" x2="320.0" y2="345.9" stroke="#b6c2bb" stroke-dasharray="4 4" stroke-width="1"/>
+<line x1="450.0" y1="400.7" x2="320.0" y2="348.8" stroke="#b6c2bb" stroke-dasharray="4 4" stroke-width="1"/>
 <line x1="590.0" y1="380.0" x2="590.0" y2="189.0" stroke="#148c4f" stroke-width="1.6"/>
 <text x="590.0" y="356.9" font-size="11" font-weight="700" fill="#0e6b3b">N</text>
 <text x="590.0" y="204.1" font-size="11" font-weight="700" fill="#0e6b3b">1</text>
@@ -239,7 +239,7 @@
 <text x="460" y="333" font-size="11.5" fill="#0e1612" font-weight="400">closes_at</text>
 <text x="636" y="333" font-size="10.5" fill="#5b6b63">text</text>
 </g>
-<g><rect x="450" y="380" width="280" height="136" rx="6" fill="#f6f8f7" stroke="#0e1612" stroke-width="1.2"/>
+<g><rect x="450" y="380" width="280" height="153" rx="6" fill="#f6f8f7" stroke="#0e1612" stroke-width="1.2"/>
 <path d="M450 406 V386 a6 6 0 0 1 6 -6 H724 a6 6 0 0 1 6 6 V406 Z" fill="#0e1612"/>
 <text x="460" y="398" font-size="13" font-weight="700" fill="#ffffff">tariffs</text>
 <text x="460" y="420" font-size="11.5" fill="#0e1612" font-weight="700">id</text>
@@ -257,28 +257,30 @@
 <text x="722" y="488" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">FK</text>
 <text x="460" y="505" font-size="11.5" fill="#0e1612" font-weight="400">created_at</text>
 <text x="636" y="505" font-size="10.5" fill="#5b6b63">text</text>
+<text x="460" y="522" font-size="11.5" fill="#0e1612" font-weight="400">note</text>
+<text x="636" y="522" font-size="10.5" fill="#5b6b63">text</text>
 </g>
-<g><rect x="450" y="552" width="280" height="170" rx="6" fill="#f6f8f7" stroke="#0e1612" stroke-width="1.2"/>
-<path d="M450 578 V558 a6 6 0 0 1 6 -6 H724 a6 6 0 0 1 6 6 V578 Z" fill="#0e1612"/>
-<text x="460" y="570" font-size="13" font-weight="700" fill="#ffffff">settings</text>
-<text x="460" y="592" font-size="11.5" fill="#0e1612" font-weight="700">site_id</text>
-<text x="636" y="592" font-size="10.5" fill="#5b6b63">text</text>
-<text x="722" y="592" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">PK FK</text>
-<text x="460" y="609" font-size="11.5" fill="#0e1612" font-weight="400">investment_cop</text>
-<text x="636" y="609" font-size="10.5" fill="#5b6b63">real</text>
-<text x="460" y="626" font-size="11.5" fill="#0e1612" font-weight="400">emission_factor_kg_per_kwh</text>
+<g><rect x="450" y="569" width="280" height="170" rx="6" fill="#f6f8f7" stroke="#0e1612" stroke-width="1.2"/>
+<path d="M450 595 V575 a6 6 0 0 1 6 -6 H724 a6 6 0 0 1 6 6 V595 Z" fill="#0e1612"/>
+<text x="460" y="587" font-size="13" font-weight="700" fill="#ffffff">settings</text>
+<text x="460" y="609" font-size="11.5" fill="#0e1612" font-weight="700">site_id</text>
+<text x="636" y="609" font-size="10.5" fill="#5b6b63">text</text>
+<text x="722" y="609" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">PK FK</text>
+<text x="460" y="626" font-size="11.5" fill="#0e1612" font-weight="400">investment_cop</text>
 <text x="636" y="626" font-size="10.5" fill="#5b6b63">real</text>
-<text x="460" y="643" font-size="11.5" fill="#0e1612" font-weight="400">emission_factor_source</text>
-<text x="636" y="643" font-size="10.5" fill="#5b6b63">text</text>
-<text x="460" y="660" font-size="11.5" fill="#0e1612" font-weight="400">alert_threshold_pct</text>
-<text x="636" y="660" font-size="10.5" fill="#5b6b63">real</text>
-<text x="460" y="677" font-size="11.5" fill="#0e1612" font-weight="400">alert_window_minutes</text>
-<text x="636" y="677" font-size="10.5" fill="#5b6b63">integer</text>
-<text x="460" y="694" font-size="11.5" fill="#0e1612" font-weight="400">updated_by</text>
+<text x="460" y="643" font-size="11.5" fill="#0e1612" font-weight="400">emission_factor_kg_per_kwh</text>
+<text x="636" y="643" font-size="10.5" fill="#5b6b63">real</text>
+<text x="460" y="660" font-size="11.5" fill="#0e1612" font-weight="400">emission_factor_source</text>
+<text x="636" y="660" font-size="10.5" fill="#5b6b63">text</text>
+<text x="460" y="677" font-size="11.5" fill="#0e1612" font-weight="400">alert_threshold_pct</text>
+<text x="636" y="677" font-size="10.5" fill="#5b6b63">real</text>
+<text x="460" y="694" font-size="11.5" fill="#0e1612" font-weight="400">alert_window_minutes</text>
 <text x="636" y="694" font-size="10.5" fill="#5b6b63">integer</text>
-<text x="722" y="694" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">FK</text>
-<text x="460" y="711" font-size="11.5" fill="#0e1612" font-weight="400">updated_at</text>
-<text x="636" y="711" font-size="10.5" fill="#5b6b63">text</text>
+<text x="460" y="711" font-size="11.5" fill="#0e1612" font-weight="400">updated_by</text>
+<text x="636" y="711" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="722" y="711" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">FK</text>
+<text x="460" y="728" font-size="11.5" fill="#0e1612" font-weight="400">updated_at</text>
+<text x="636" y="728" font-size="10.5" fill="#5b6b63">text</text>
 </g>
 <g><rect x="860" y="70" width="280" height="204" rx="6" fill="#f6f8f7" stroke="#0e1612" stroke-width="1.2"/>
 <path d="M860 96 V76 a6 6 0 0 1 6 -6 H1134 a6 6 0 0 1 6 6 V96 Z" fill="#0e1612"/>
