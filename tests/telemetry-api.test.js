@@ -181,3 +181,16 @@ test('seeded simulator data is readable by the repositories and the server keeps
     fs.rmSync(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
 });
+
+test('health: production hides network details, local profile keeps them; both report version and uptime', async () => {
+  const { startApp } = require('./helpers/api');
+  const prod = await startApp({ seed: false, env: { APP_ENV: 'production', VATIO_ADMIN_PASSWORD: 'a-very-long-unique-password', VATIO_DEVICE_KEY: 'device-key-unique-0123456789' } });
+  const local = await startApp({ seed: false });
+  try {
+    const p = await (await fetch(`${prod.base}/api/health`)).json();
+    assert.deepEqual(Object.keys(p).sort(), ['ok', 'server_time', 'service', 'source', 'uptime_s', 'version']);
+    assert.match(p.version, /^\d+\.\d+\.\d+/);
+    const l = await (await fetch(`${local.base}/api/health`)).json();
+    assert.ok(Array.isArray(l.local_ips) && 'port' in l && l.uptime_s >= 0);
+  } finally { prod.close(); local.close(); }
+});

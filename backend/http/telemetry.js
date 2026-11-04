@@ -1,6 +1,7 @@
 'use strict';
 /** Health, server info, device telemetry (ESP32 and manufacturer formats) and the live view of readings. */
 const os = require('node:os');
+const { version: VERSION } = require('../../package.json');
 const { envelopeFromPayload, IngestionError } = require('../app/ingestion');
 const { json } = require('./router');
 
@@ -60,10 +61,15 @@ function register(router, app) {
     };
   }
 
-  router.get('/api/health', () => json(200, {
-    ok: true, service: 'Vatio Local', source: deviceRows().length ? 'esp32' : 'simulator', local_ips: localIPv4Addresses(),
-    port: config.port, server_time: new Date(clock.now()).toISOString(),
-  }), { public: true, doc: 'Estado del servicio.' });
+  // Production answers only what a monitor needs: no network addresses or port of the host.
+  router.get('/api/health', () => {
+    const body = {
+      ok: true, service: 'Vatio Local', source: deviceRows().length ? 'esp32' : 'simulator',
+      server_time: new Date(clock.now()).toISOString(), version: VERSION, uptime_s: Math.round(process.uptime()),
+    };
+    if (!config.isProduction) Object.assign(body, { local_ips: localIPv4Addresses(), port: config.port });
+    return json(200, body);
+  }, { public: true, doc: 'Estado del servicio.' });
 
   router.get('/api/info', () => {
     const ips = localIPv4Addresses();

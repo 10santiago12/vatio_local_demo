@@ -286,7 +286,7 @@ Doble protección: permiso `view_demo_panel` y bandera del entorno. Está habili
 ## Telemetría y servicio
 
 ### `GET /api/health`  (público)
-- **Salida:** `{ ok, service, source (esp32 o simulator), local_ips, port, server_time }`.
+- **Salida:** `{ ok, service, source (esp32 o simulator), server_time, version, uptime_s }`; fuera de producción también `local_ips` y `port`. En producción no se exponen direcciones de red.
 
 ### `GET /api/info`  · cualquier sesión
 - **Salida:** `{ port, local_ips, browser_urls, telemetry_urls, device_key_configured }` para configurar el ESP32.
