@@ -18,7 +18,7 @@ Estado: **Listo** = implementado y probado. **API lista** = implementado y proba
 | Multisede y datos crudos (RF-09, RF-17, RNF-14) | `backend/domain/multisite.js`, `backend/app/data-exchange.js` | API lista: exportación y reimportación verificada |
 | Módulos y fabricantes (RF-08, RNF-03) | `backend/adapters/manufacturers/`, `backend/app/modules.js` | API lista |
 | Interfaz web conectada a la API | `public/app.js` | Parcial: lecturas en vivo reales; varias pantallas aún con datos de ejemplo |
-| Pruebas | 288 pruebas (`npm test`) | Listo: unitarias del dominio, API e integración. Pruebas E2E, de navegador y de carga: pendientes (equipo de calidad) |
+| Pruebas | 288 pruebas (`npm test`) | Listo: unitarias del dominio, API e integración. Navegador (RNF-04): 39 pruebas Playwright aprobadas en Chrome, Edge, Chromium, Firefox, WebKit y 2 móviles emulados (`docs/qa.md`). Carga (RNF-01, RNF-02): cumplen en local, p95 de 420 ms con 50 módulos y 0,36 s de renderizado con 20 equipos (`docs/qa-carga.md`). Pendientes con personas: dispositivos reales y pruebas de usabilidad RNF-05/06 (plantillas en `docs/qa.md`) |
 | Documentación | `README.md`, `docs/api.md`, `docs/der.md`, `docs/stack-y-arquitectura.md`, `docs/despliegue.md` | Listo |
 | Integración externa (webhook, correo) | — | Pendiente |
 | Registro de eventos y errores | `backend/ops/request-log.js`, tablas `events` y `error_log`, `docs/operaciones.md` | Listo: logs JSON con `X-Request-Id`, eventos de uso y errores consultables por el dueño |

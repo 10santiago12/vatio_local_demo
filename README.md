@@ -150,6 +150,7 @@ Cubren autenticación, clave de dispositivo, CSRF, rechazo de carga crítica, pe
 - [`docs/00-gap-analysis.md`](docs/00-gap-analysis.md): auditoría inicial.
 - [`docs/der.md`](docs/der.md): modelo de datos, migraciones y diagrama entidad-relación.
 - [`docs/09-matriz-cumplimiento.md`](docs/09-matriz-cumplimiento.md): estado de cumplimiento por requisito.
+- [`docs/qa.md`](docs/qa.md): QA de interfaz (`cd qa && npm test`) y plantillas de dispositivo real y usabilidad; [`docs/qa-carga.md`](docs/qa-carga.md): pruebas de carga.
 - [`.ai/HANDOFF.md`](.ai/HANDOFF.md): estado del trabajo y siguientes pasos.
 
 ## Documentación
