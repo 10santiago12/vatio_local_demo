@@ -32,23 +32,29 @@ class DemoControlError extends Error {
   }
 }
 
-/** A generic cycling load for the performance test (drawn from the seeded sequence). */
-function generatedProfile(n, next) {
-  const code = `extra-${String(n).padStart(2, '0')}`;
-  const typicalPowerW = 100 + Math.floor(next() * 19) * 100;
-  const period = 12 + Math.floor(next() * 4) * 2;
-  const onMin = Math.max(3, Math.floor(period * (0.3 + next() * 0.4)));
+/** A generic cycling load: on for part of every cycle while the site is open, idle otherwise. */
+function cyclingProfile({ code, name, moduleId, manufacturer, typicalPowerW, period, onMin, phase, criticality = 'essential', controlMode = 'monitor_only' }) {
   const idleW = Math.round(typicalPowerW * 0.03);
   return {
-    code, name: `Carga de prueba ${String(n).padStart(2, '0')}`, icon: 'plug', moduleId: `MX-X${String(n).padStart(2, '0')}`,
-    manufacturer: n % 2 === 0 ? MANUFACTURERS.VOLTIOLAB : MANUFACTURERS.ENERSENSE, typicalPowerW,
-    criticality: n % 3 === 0 ? 'non_essential' : 'essential', controlMode: 'monitor_only', phase: n % period,
+    code, name, icon: 'plug', moduleId, manufacturer, typicalPowerW, criticality, controlMode, phase,
     plan: () => ({}),
     at: (plan, prev, p, c) => {
       const w = c.open ? (cycleOn(c.abs, period, onMin, p.phase) ? typicalPowerW : idleW) : idleW;
       return { w, mean: c.open ? (onMin * typicalPowerW + (period - onMin) * idleW) / period : idleW };
     },
   };
+}
+
+/** A generic load for the performance test (drawn from the seeded sequence). */
+function generatedProfile(n, next) {
+  const typicalPowerW = 100 + Math.floor(next() * 19) * 100;
+  const period = 12 + Math.floor(next() * 4) * 2;
+  const onMin = Math.max(3, Math.floor(period * (0.3 + next() * 0.4)));
+  return cyclingProfile({
+    code: `extra-${String(n).padStart(2, '0')}`, name: `Carga de prueba ${String(n).padStart(2, '0')}`, moduleId: `MX-X${String(n).padStart(2, '0')}`,
+    manufacturer: n % 2 === 0 ? MANUFACTURERS.VOLTIOLAB : MANUFACTURERS.ENERSENSE, typicalPowerW, period, onMin, phase: n % period,
+    criticality: n % 3 === 0 ? 'non_essential' : 'essential',
+  });
 }
 
 /**
@@ -114,6 +120,14 @@ function createDemoControls(deps) {
       const modifierId = engine.modifiers.add({ kind: 'force_on', loadCode: 'sign', startMs, endMs, powerW: 250 });
       if (nowMs > startMs) rewrite('sign', startMs);
       return { modifierId, startsAt: new Date(startMs).toISOString(), endsAt: new Date(endMs).toISOString() };
+    },
+
+    /** Gives a module registered at run time (technician flow) a simulated load and starts its measurements. */
+    addSimulatedModule({ moduleId, loadCode, loadName, manufacturer }) {
+      if (!engine.profiles().some((p) => p.code === loadCode)) {
+        engine.addProfile(cyclingProfile({ code: loadCode, name: loadName, moduleId, manufacturer, typicalPowerW: 150, period: 14, onMin: 6, phase: 0 }));
+      }
+      fleet.addModule({ moduleId, loadCode, manufacturer, energyKwh: 0 });
     },
 
     disconnectModule(moduleId) {

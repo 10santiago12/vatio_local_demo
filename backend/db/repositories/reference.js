@@ -19,6 +19,8 @@ function createReferenceRepositories(db) {
     users: db.prepare('SELECT id, username, role, display_name, active, created_at, last_login_at FROM users ORDER BY username'),
     userRole: db.prepare('UPDATE users SET role = ? WHERE id = ?'),
     userActive: db.prepare('UPDATE users SET active = ? WHERE id = ?'),
+    userPassword: db.prepare('UPDATE users SET salt = ?, hash = ? WHERE id = ?'),
+    ownersActive: db.prepare("SELECT COUNT(*) AS n FROM users WHERE role = 'owner' AND active = 1"),
     userLogin: db.prepare('UPDATE users SET last_login_at = ? WHERE id = ?'),
     grant: db.prepare('INSERT INTO user_sites(user_id, site_id) VALUES(?,?) ON CONFLICT DO NOTHING'),
     revoke: db.prepare('DELETE FROM user_sites WHERE user_id = ? AND site_id = ?'),
@@ -31,7 +33,7 @@ function createReferenceRepositories(db) {
     settingsGet: db.prepare('SELECT * FROM settings WHERE site_id = ?'),
     settingsInsert: db.prepare('INSERT INTO settings(site_id) VALUES(?) ON CONFLICT DO NOTHING')
   };
-  const settingColumns = ['investment_cop', 'emission_factor_kg_per_kwh', 'emission_factor_source', 'alert_threshold_pct', 'alert_window_minutes'];
+  const settingColumns = ['investment_cop', 'emission_factor_kg_per_kwh', 'emission_factor_source', 'alert_threshold_pct', 'alert_window_minutes', 'sector_reference_kwh_per_day'];
 
   return {
     roles: {
@@ -57,6 +59,8 @@ function createReferenceRepositories(db) {
       list: () => q.users.all(),
       setRole: (id, role) => q.userRole.run(role, id).changes === 1,
       setActive: (id, active) => q.userActive.run(active ? 1 : 0, id).changes === 1,
+      setPassword: (id, salt, hash) => q.userPassword.run(salt, hash, id).changes === 1,
+      countActiveOwners: () => q.ownersActive.get().n,
       touchLogin: (id, at) => q.userLogin.run(at, id),
       grantSite: (userId, siteId) => q.grant.run(userId, siteId),
       revokeSite: (userId, siteId) => q.revoke.run(userId, siteId),

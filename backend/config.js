@@ -92,9 +92,14 @@ function buildConfig(env = process.env) {
     if (deviceKey && deviceKey.length < MIN_DEVICE_KEY_PRODUCTION) problems.push(`VATIO_DEVICE_KEY debe tener al menos ${MIN_DEVICE_KEY_PRODUCTION} caracteres en producción.`);
     if (adminPassword && deviceKey && adminPassword === deviceKey) problems.push('VATIO_ADMIN_PASSWORD y VATIO_DEVICE_KEY deben ser distintas.');
   }
+  // Demo Panel: on in local, off in production unless VATIO_ENABLE_DEMO_PANEL=yes.
+  const demoFlag = String(env.VATIO_ENABLE_DEMO_PANEL || '').trim().toLowerCase();
+  if (demoFlag && !['yes', 'no'].includes(demoFlag)) problems.push('VATIO_ENABLE_DEMO_PANEL debe ser "yes" o "no".');
+  const demoPanelEnabled = demoFlag ? demoFlag === 'yes' : !production;
   if (problems.length) throw new ConfigError(problems);
 
   return Object.freeze({
+    demoPanelEnabled,
     appEnv,
     isProduction: production,
     host,

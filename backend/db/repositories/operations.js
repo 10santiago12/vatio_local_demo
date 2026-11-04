@@ -22,8 +22,8 @@ function createOperationsRepositories(db) {
     alertReview: db.prepare("UPDATE alerts SET status = 'reviewed', reviewed_by = ?, reviewed_at = ? WHERE id = ? AND status = 'active'"),
     alertCount: db.prepare("SELECT COUNT(*) AS n FROM alerts WHERE site_id = ? AND status = 'active'"),
 
-    recInsert: db.prepare(`INSERT INTO recommendations(site_id, load_id, type, title, assumption, monthly_savings_kwh, monthly_savings_cop, score, confidence, created_at, baseline_window_start, baseline_window_end)
-      VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`),
+    recInsert: db.prepare(`INSERT INTO recommendations(site_id, load_id, type, title, assumption, monthly_savings_kwh, monthly_savings_cop, score, confidence, created_at, baseline_window_start, baseline_window_end, description, evidence, score_explanation)
+      VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`),
     rec: db.prepare('SELECT * FROM recommendations WHERE id = ?'),
     recDecide: db.prepare(`UPDATE recommendations SET status = ?, decided_by = ?, decided_at = ?, reason = ?, postponed_until = ?,
       accepted_at = CASE WHEN ? = 'accepted' THEN ? ELSE accepted_at END
@@ -35,6 +35,8 @@ function createOperationsRepositories(db) {
     actionDecide: db.prepare(`UPDATE control_actions SET status = ?, decided_by = ?, decided_at = ?, reason = COALESCE(?, reason),
       executed_at = CASE WHEN ? = 'executed' THEN ? ELSE executed_at END
       WHERE id = ? AND status IN ('pending', 'approved')`),
+
+    actionAnnotate: db.prepare('UPDATE control_actions SET reason = ? WHERE id = ?'),
 
     auditInsert: db.prepare(`INSERT INTO audit(at, actor, event, site_id, details, user_id, role, load_id, result, reason, simulated_at)
       VALUES(?,?,?,?,?,?,?,?,?,?,?)`),
@@ -60,8 +62,8 @@ function createOperationsRepositories(db) {
       countActive: (siteId) => q.alertCount.get(siteId).n
     },
     recommendations: {
-      create({ siteId, loadId, type, title, assumption, monthlySavingsKwh = 0, monthlySavingsCop = 0, score, confidence, createdAt, baselineWindowStart = null, baselineWindowEnd = null }) {
-        const result = q.recInsert.run(siteId, loadId, type, title, assumption, monthlySavingsKwh, monthlySavingsCop, score, confidence, createdAt, baselineWindowStart, baselineWindowEnd);
+      create({ siteId, loadId, type, title, assumption, monthlySavingsKwh = 0, monthlySavingsCop = 0, score, confidence, createdAt, baselineWindowStart = null, baselineWindowEnd = null, description = null, evidence = null, scoreExplanation = null }) {
+        const result = q.recInsert.run(siteId, loadId, type, title, assumption, monthlySavingsKwh, monthlySavingsCop, score, confidence, createdAt, baselineWindowStart, baselineWindowEnd, description, json(evidence), scoreExplanation);
         return q.rec.get(Number(result.lastInsertRowid));
       },
       get: (id) => q.rec.get(id) ?? null,
@@ -85,6 +87,8 @@ function createOperationsRepositories(db) {
         const w = where({ site_id: siteId, load_id: loadId, status, batch_id: batchId });
         return db.prepare(`SELECT * FROM control_actions ${w.clause} ORDER BY requested_at DESC, id DESC LIMIT ?`).all(...w.params, limit);
       },
+      /** Updates the explanatory reason of an action without changing its status. */
+      annotate: (id, reason) => q.actionAnnotate.run(reason, id).changes === 1,
       /** Moves a pending/approved action to approved, rejected, executed or discarded. Returns false if already final. */
       transition(id, { status, decidedBy = null, at, reason = null }) {
         return q.actionDecide.run(status, decidedBy, at, reason, status, at, id).changes === 1;
@@ -95,9 +99,15 @@ function createOperationsRepositories(db) {
         const row = q.auditInsert.run(at, actor, event, siteId, JSON.stringify(details), userId, role, loadId, result, reason, simulatedAt);
         return Number(row.lastInsertRowid);
       },
-      list({ siteId, userId, loadId, result, limit = 200 } = {}) {
-        const w = where({ site_id: siteId, user_id: userId, load_id: loadId, result });
-        return db.prepare(`SELECT * FROM audit ${w.clause} ORDER BY id DESC LIMIT ?`).all(...w.params, limit);
+      /** Newest first. `from` is inclusive and `to` exclusive (ISO instants); `actor` is the username. */
+      list({ siteId, userId, actor, role, event, loadId, result, from, to, limit = 200, offset = 0 } = {}) {
+        const w = where({ site_id: siteId, user_id: userId, actor, role, event, load_id: loadId, result });
+        const parts = w.clause ? [w.clause.slice(6)] : [];
+        const params = [...w.params];
+        if (from) { parts.push('at >= ?'); params.push(from); }
+        if (to) { parts.push('at < ?'); params.push(to); }
+        const clause = parts.length ? `WHERE ${parts.join(' AND ')}` : '';
+        return db.prepare(`SELECT * FROM audit ${clause} ORDER BY id DESC LIMIT ? OFFSET ?`).all(...params, limit, offset);
       }
     },
     events: {
