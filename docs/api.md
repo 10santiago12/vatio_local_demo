@@ -313,6 +313,33 @@ Doble protección: permiso `view_demo_panel` y bandera del entorno. Está habili
 - **Errores:** `400 invalid_event`, `401`, `429 rate_limited` (más de 60 eventos por minuto por usuario).
 - El resto de eventos (inicio y cierre de sesión, alertas, decisiones, descargas, respaldos) los registra el servidor solo.
 
+### `GET /api/ops/events`  · `view_ops`
+- **Filtros (query):** `name`, `from`, `to` (AAAA-MM-DD, el día final se incluye, o fecha ISO), `limit` (1-500, por defecto 100).
+- **Salida:** `{ count, events: [{ id, at, name, userId, properties }] }`, de lo más nuevo a lo más antiguo. Nombres: `login_ok`, `login_failed`, `logout`, `alert_created`, `alert_reviewed`, `recommendation_decision`, `control_decision`, `report_downloaded`, `data_exported`, `backup_created`, `backup_failed`, `page_view`, `report_view`, `help_opened`.
+- **Errores:** `400 invalid_filter`, `403` para otros perfiles (queda auditado).
+
+### `GET /api/ops/errors`  · `view_ops`
+- **Filtros (query):** `level` (`warn`, `error`, `fatal`), `limit` (1-500).
+- **Salida:** `{ count, errors: [{ id, at, level, source, message, stack, context, requestId }] }`. `requestId` coincide con el encabezado `X-Request-Id` de la respuesta que falló.
+- **Errores:** `400 invalid_filter`, `403`.
+
+### `GET /api/ops/metrics`  · `view_ops`
+- **Salida:** `{ uptime_s, requests: { total, by_status_class: { "2xx", "3xx", "4xx", "5xx", other } }, latency_ms: { samples, p50, p95 }, db: { size_bytes }, sessions: { active }, backup: { last_at, last_status (ok o failed), stored } }`. Los contadores y la latencia son de este proceso (se reinician al reiniciar).
+- **Errores:** `403`.
+
+### `GET /api/ops/backups`  · `manage_backups`
+- **Salida:** `{ backups: [{ name, size_bytes, created_at, sha256 }], keep, intervalHours }`, del más nuevo al más antiguo.
+- **Errores:** `403`.
+
+### `POST /api/ops/backups`  · `manage_backups`
+- **Entrada:** ninguna. Crea una copia consistente de la base, verifica su integridad y guarda su suma SHA-256.
+- **Salida:** `201 { backup: { name, size_bytes, sha256 } }`. Audita `backup_created`.
+- **Errores:** `500 backup_failed` (el detalle queda en `error_log`), `403`.
+
+### `GET /api/ops/backups/:name/download`  · `manage_backups`
+- **Salida:** el archivo SQLite como `application/octet-stream` (adjunto), enviado en flujo. Audita `backup_downloaded`. Guárdelo fuera del servidor.
+- **Errores:** `404 backup_not_found` (nombre desconocido), `403`.
+
 ## Pruebas de la API
 
 Las pruebas de integración están en `tests/api/` (`rbac`, `operations`, `control`, `value`, `reports`, `data`) y levantan la aplicación completa con una base temporal sembrada, un usuario demo por perfil y un reloj simulado controlado.

@@ -44,6 +44,8 @@ const PERMISSIONS = Object.freeze({
   view_audit: 'ver el registro de auditoría',
   manage_users: 'administrar usuarios',
   view_demo_panel: 'usar el panel de demostración',
+  view_ops: 'ver los eventos, errores y métricas del sistema',
+  manage_backups: 'crear y descargar copias de seguridad',
 });
 
 const ALL = Object.keys(PERMISSIONS);

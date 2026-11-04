@@ -87,7 +87,13 @@ function createAuth({ repos, access, wallNow }) {
     return dropped;
   }
 
-  return { login, session, logout, invalidateUser, describe, COOKIE, SESSION_MS };
+  /** Number of live (not expired) sessions. */
+  function activeSessions() {
+    const now = wallNow();
+    return [...sessions.values()].filter((s) => s.expires >= now).length;
+  }
+
+  return { activeSessions, login, session, logout, invalidateUser, describe, COOKIE, SESSION_MS };
 }
 
 module.exports = { createAuth, COOKIE };

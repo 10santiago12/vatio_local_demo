@@ -31,6 +31,7 @@ const { createDemo } = require('./app/demo');
 const { createValue } = require('./app/value');
 const { createDataExchange } = require('./app/data-exchange');
 const { createBackups } = require('./app/backups');
+const { createOps } = require('./app/ops');
 const { createUiEvents } = require('./app/ui-events');
 const { createMetrics, requestLine } = require('./ops/request-log');
 
@@ -107,8 +108,9 @@ function createRuntime({ config, db, wallNow = Date.now }) {
   const data = createDataExchange({ repos, clock, access, analytics });
   const uiEvents = createUiEvents({ track, wallNow });
   const backups = createBackups({ db, config, track, logError, wallNow });
+  const ops = createOps({ repos, config, auth, metrics, backups });
   const app = {
-    config, db, repos, clock, siteId, wallNow, state, logError, logRequest, metrics, track, uiEvents, backups,
+    config, db, repos, clock, siteId, wallNow, state, logError, logRequest, metrics, track, uiEvents, backups, ops,
     ingestion, access, auth, analytics, users, settings, control, recommendations, alerts, operations, value, data,
     scenario: () => state.scenario,
     close() { backups.stop(); db.close(); },

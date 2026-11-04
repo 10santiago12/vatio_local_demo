@@ -114,9 +114,11 @@ function createOperationsRepositories(db) {
       track({ at = new Date().toISOString(), name, userId = null, siteId = null, properties }) {
         return Number(q.eventInsert.run(at, userId, siteId, name, json(properties)).lastInsertRowid);
       },
-      list({ name, userId, limit = 200 } = {}) {
+      list({ name, userId, from, to, limit = 200 } = {}) {
         const w = where({ name, user_id: userId });
-        return db.prepare(`SELECT * FROM events ${w.clause} ORDER BY id DESC LIMIT ?`).all(...w.params, limit);
+        const range = [from ? 'at >= ?' : null, to ? 'at <= ?' : null].filter(Boolean);
+        const clause = [w.clause.replace(/^WHERE /, ''), ...range].filter(Boolean).join(' AND ');
+        return db.prepare(`SELECT * FROM events ${clause ? `WHERE ${clause}` : ''} ORDER BY id DESC LIMIT ?`).all(...w.params, ...[from, to].filter(Boolean), limit);
       }
     },
     errors: {
