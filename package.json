@@ -9,7 +9,9 @@
     "test": "node --test \"tests/**/*.test.js\"",
     "der": "node scripts/generate-der.js",
     "seed:demo": "node scripts/seed-demo.js",
-    "seed:users": "node scripts/seed-demo-users.js"
+    "seed:users": "node scripts/seed-demo-users.js",
+    "backup": "node scripts/backup.js",
+    "restore": "node scripts/restore.js"
   },
   "engines": {
     "node": ">=24"

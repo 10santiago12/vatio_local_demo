@@ -339,6 +339,7 @@ function headerHtml(title){
       ${sourcePill()}
       ${pill(state.role,"good")}
       <button class="icon-btn" data-action="toggle-theme" aria-label="${toLight?"Cambiar a tema claro":"Cambiar a tema oscuro"}" title="${toLight?"Tema claro":"Tema oscuro"}">${icon(toLight?"sun":"moon")}</button>
+      <button class="icon-btn" data-action="logout" aria-label="Cerrar sesión" title="Cerrar sesión">${icon("log-out")}</button>
     </div>`;
 }
 function mountShell(){
@@ -829,7 +830,9 @@ async function fetchInfo(){
 }
 async function fetchTelemetry(){
   try{
-    const next = await fetch("/api/telemetry/latest",{cache:"no-store"}).then(r=>r.json());
+    const response = await fetch("/api/telemetry/latest",{cache:"no-store"});
+    if(response.status===401){ endSession(); return; }
+    const next = await response.json();
     const changedSource = state.telemetry && state.telemetry.source !== next.source;
     const first = !state.telemetry;
     state.telemetry = next;
@@ -840,6 +843,18 @@ async function fetchTelemetry(){
     console.error(e);
   }
 }
+// The session lives only in an HttpOnly cookie (unreadable from JS) and the CSRF token is kept in memory
+// only; nothing sensitive is written to localStorage. Logging out clears both and reloads a clean page.
+function endSession(){
+  state.csrf = "";
+  state.role = "";
+  state.telemetry = null;
+  location.replace("/");
+}
+async function logout(){
+  try{ await fetch("/api/auth/logout",{method:"POST",headers:{"x-csrf-token":state.csrf}}); }catch(e){}
+  endSession();
+}
 async function resetSource(){
   await fetch("/api/reset",{method:"POST",headers:{"x-csrf-token":state.csrf}});
   await fetchTelemetry();
@@ -847,7 +862,7 @@ async function resetSource(){
 function cycleRole(){
   const roles=["Administrador","Gerente de operaciones","Empleado de cierre","Responsable financiero","Analista de datos"];
   const i=roles.indexOf(state.role);
-  state.role=roles[(i+1)%roles.length]; localStorage.setItem("vatio_role",state.role); render({force:true});
+  state.role=roles[(i+1)%roles.length]; render({force:true});
 }
 
 /* ---------- events ---------- */
@@ -869,6 +884,7 @@ document.addEventListener("click", async (event)=>{
 
   if(action==="cycle-role") cycleRole();
   if(action==="toggle-theme") applyTheme(state.theme==="dark" ? "light" : "dark");
+  if(action==="logout") logout();
   if(action==="open-more"){ state.moreOpen = true; render({force:true}); }
   if(action==="close-more"){ state.moreOpen = false; render({force:true}); }
   if(action==="download-csv") exportCsv();

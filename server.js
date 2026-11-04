@@ -21,6 +21,8 @@ setInterval(() => runSafely(() => app.ingestion.compact(), 'readings-compaction'
 process.on('unhandledRejection', (reason) => app.logError('unhandledRejection', reason instanceof Error ? reason : new Error(String(reason))));
 process.on('uncaughtException', (error) => { app.logError('uncaughtException', error); process.exit(1); });
 
+app.backups.start();
+
 server.listen(config.port, config.host, () => {
   const ips = localIPv4Addresses();
   console.log('');
