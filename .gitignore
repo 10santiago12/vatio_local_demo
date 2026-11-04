@@ -3,3 +3,6 @@ data/*.sqlite*
 .env
 node_modules/
 .DS_Store
+data/backups/
+qa/node_modules/
+qa/results/

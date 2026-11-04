@@ -1,0 +1,575 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1590" height="1569" viewBox="0 0 1590 1569" font-family="Segoe UI, Arial, sans-serif">
+<title>Vatio - Diagrama entidad-relación</title>
+<rect width="1590" height="1569" fill="#ffffff"/>
+<text x="40" y="40" font-size="15" font-weight="700" fill="#0e1612">Acceso y trazabilidad</text>
+<text x="450" y="40" font-size="15" font-weight="700" fill="#0e1612">Sede y configuración</text>
+<text x="860" y="40" font-size="15" font-weight="700" fill="#0e1612">Cargas y mediciones</text>
+<text x="1270" y="40" font-size="15" font-weight="700" fill="#0e1612">Análisis y control</text>
+<text x="40" y="1364" font-size="15" font-weight="700" fill="#5b6b63">Tablas heredadas y de control de versiones (sin relaciones)</text>
+<line x1="1270.0" y1="451.2" x2="320.0" y2="313.3" stroke="#b6c2bb" stroke-dasharray="4 4" stroke-width="1"/>
+<line x1="1270.0" y1="369.2" x2="1139.6" y2="274.0" stroke="#148c4f" stroke-width="1.6"/>
+<text x="1257.0" y="355.7" font-size="11" font-weight="700" fill="#0e6b3b">N</text>
+<text x="1152.7" y="279.5" font-size="11" font-weight="700" fill="#0e6b3b">1</text>
+<line x1="1270.0" y1="413.1" x2="730.0" y2="187.9" stroke="#148c4f" stroke-width="1.6"/>
+<text x="1216.0" y="386.6" font-size="11" font-weight="700" fill="#0e6b3b">N</text>
+<text x="784.0" y="206.4" font-size="11" font-weight="700" fill="#0e6b3b">1</text>
+<line x1="320.0" y1="571.7" x2="860.0" y2="254.3" stroke="#148c4f" stroke-width="1.6"/>
+<text x="374.0" y="536.0" font-size="11" font-weight="700" fill="#0e6b3b">N</text>
+<text x="806.0" y="282.0" font-size="11" font-weight="700" fill="#0e6b3b">0..1</text>
+<line x1="180.0" y1="535.0" x2="180.0" y2="155.0" stroke="#148c4f" stroke-width="1.6"/>
+<text x="180.0" y="493.0" font-size="11" font-weight="700" fill="#0e6b3b">N</text>
+<text x="180.0" y="189.0" font-size="11" font-weight="700" fill="#0e6b3b">0..1</text>
+<line x1="180.0" y1="535.0" x2="180.0" y2="395.0" stroke="#148c4f" stroke-width="1.6"/>
+<text x="180.0" y="517.0" font-size="11" font-weight="700" fill="#0e6b3b">N</text>
+<text x="180.0" y="405.0" font-size="11" font-weight="700" fill="#0e6b3b">0..1</text>
+<line x1="1270.0" y1="183.2" x2="1140.0" y2="177.8" stroke="#148c4f" stroke-width="1.6"/>
+<text x="1257.0" y="178.7" font-size="11" font-weight="700" fill="#0e6b3b">N</text>
+<text x="1153.0" y="174.3" font-size="11" font-weight="700" fill="#0e6b3b">1</text>
+<line x1="1270.0" y1="1064.9" x2="320.0" y2="392.1" stroke="#b6c2bb" stroke-dasharray="4 4" stroke-width="1"/>
+<line x1="1270.0" y1="1064.9" x2="320.0" y2="392.1" stroke="#b6c2bb" stroke-dasharray="4 4" stroke-width="1"/>
+<line x1="1410.0" y1="1028.0" x2="1410.0" y2="992.0" stroke="#148c4f" stroke-width="1.6"/>
+<text x="1410.0" y="1020.4" font-size="11" font-weight="700" fill="#0e6b3b">N</text>
+<text x="1410.0" y="991.6" font-size="11" font-weight="700" fill="#0e6b3b">0..1</text>
+<line x1="1353.8" y1="1028.0" x2="1042.2" y2="274.0" stroke="#148c4f" stroke-width="1.6"/>
+<text x="1322.6" y="948.6" font-size="11" font-weight="700" fill="#0e6b3b">N</text>
+<text x="1073.3" y="345.4" font-size="11" font-weight="700" fill="#0e6b3b">1</text>
+<line x1="1302.2" y1="1028.0" x2="637.2" y2="189.0" stroke="#148c4f" stroke-width="1.6"/>
+<text x="1235.7" y="940.1" font-size="11" font-weight="700" fill="#0e6b3b">N</text>
+<text x="703.7" y="268.9" font-size="11" font-weight="700" fill="#0e6b3b">1</text>
+<line x1="217.3" y1="809.0" x2="557.4" y2="189.0" stroke="#148c4f" stroke-width="1.6"/>
+<text x="251.3" y="743.0" font-size="11" font-weight="700" fill="#0e6b3b">N</text>
+<text x="523.4" y="247.0" font-size="11" font-weight="700" fill="#0e6b3b">0..1</text>
+<line x1="180.0" y1="809.0" x2="180.0" y2="395.0" stroke="#148c4f" stroke-width="1.6"/>
+<text x="180.0" y="763.6" font-size="11" font-weight="700" fill="#0e6b3b">N</text>
+<text x="180.0" y="432.4" font-size="11" font-weight="700" fill="#0e6b3b">0..1</text>
+<line x1="860.0" y1="157.5" x2="730.0" y2="144.0" stroke="#148c4f" stroke-width="1.6"/>
+<text x="847.0" y="152.1" font-size="11" font-weight="700" fill="#0e6b3b">N</text>
+<text x="743.0" y="141.4" font-size="11" font-weight="700" fill="#0e6b3b">1</text>
+<line x1="860.0" y1="377.6" x2="320.0" y2="310.4" stroke="#b6c2bb" stroke-dasharray="4 4" stroke-width="1"/>
+<line x1="1000.0" y1="310.0" x2="1000.0" y2="274.0" stroke="#148c4f" stroke-width="1.6"/>
+<text x="1000.0" y="302.4" font-size="11" font-weight="700" fill="#0e6b3b">N</text>
+<text x="1000.0" y="273.6" font-size="11" font-weight="700" fill="#0e6b3b">0..1</text>
+<line x1="868.7" y1="310.0" x2="681.9" y2="189.0" stroke="#148c4f" stroke-width="1.6"/>
+<text x="850.1" y="293.9" font-size="11" font-weight="700" fill="#0e6b3b">N</text>
+<text x="700.6" y="197.1" font-size="11" font-weight="700" fill="#0e6b3b">1</text>
+<line x1="1000.0" y1="516.0" x2="1000.0" y2="480.0" stroke="#148c4f" stroke-width="1.6"/>
+<text x="1000.0" y="508.4" font-size="11" font-weight="700" fill="#0e6b3b">N</text>
+<text x="1000.0" y="479.6" font-size="11" font-weight="700" fill="#0e6b3b">0..1</text>
+<line x1="1000.0" y1="516.0" x2="1000.0" y2="274.0" stroke="#148c4f" stroke-width="1.6"/>
+<text x="1000.0" y="487.8" font-size="11" font-weight="700" fill="#0e6b3b">N</text>
+<text x="1000.0" y="294.2" font-size="11" font-weight="700" fill="#0e6b3b">1</text>
+<line x1="1000.0" y1="739.0" x2="1000.0" y2="274.0" stroke="#148c4f" stroke-width="1.6"/>
+<text x="1000.0" y="688.5" font-size="11" font-weight="700" fill="#0e6b3b">N</text>
+<text x="1000.0" y="316.5" font-size="11" font-weight="700" fill="#0e6b3b">1</text>
+<line x1="1270.0" y1="754.3" x2="320.0" y2="352.2" stroke="#b6c2bb" stroke-dasharray="4 4" stroke-width="1"/>
+<line x1="1295.9" y1="635.0" x2="1065.2" y2="274.0" stroke="#148c4f" stroke-width="1.6"/>
+<text x="1272.8" y="594.9" font-size="11" font-weight="700" fill="#0e6b3b">N</text>
+<text x="1088.3" y="306.1" font-size="11" font-weight="700" fill="#0e6b3b">1</text>
+<line x1="1270.0" y1="696.7" x2="661.3" y2="189.0" stroke="#148c4f" stroke-width="1.6"/>
+<text x="1209.1" y="641.9" font-size="11" font-weight="700" fill="#0e6b3b">N</text>
+<text x="722.2" y="235.8" font-size="11" font-weight="700" fill="#0e6b3b">1</text>
+<line x1="493.5" y1="569.0" x2="295.8" y2="395.0" stroke="#b6c2bb" stroke-dasharray="4 4" stroke-width="1"/>
+<line x1="590.0" y1="569.0" x2="590.0" y2="189.0" stroke="#148c4f" stroke-width="1.6"/>
+<text x="590.0" y="527.0" font-size="11" font-weight="700" fill="#0e6b3b">1</text>
+<text x="590.0" y="223.0" font-size="11" font-weight="700" fill="#0e6b3b">0..1</text>
+<line x1="590.0" y1="225.0" x2="590.0" y2="189.0" stroke="#148c4f" stroke-width="1.6"/>
+<text x="590.0" y="217.4" font-size="11" font-weight="700" fill="#0e6b3b">N</text>
+<text x="590.0" y="188.6" font-size="11" font-weight="700" fill="#0e6b3b">1</text>
+<line x1="450.0" y1="400.7" x2="320.0" y2="348.8" stroke="#b6c2bb" stroke-dasharray="4 4" stroke-width="1"/>
+<line x1="590.0" y1="380.0" x2="590.0" y2="189.0" stroke="#148c4f" stroke-width="1.6"/>
+<text x="590.0" y="356.9" font-size="11" font-weight="700" fill="#0e6b3b">N</text>
+<text x="590.0" y="204.1" font-size="11" font-weight="700" fill="#0e6b3b">1</text>
+<line x1="221.5" y1="431.0" x2="517.3" y2="189.0" stroke="#148c4f" stroke-width="1.6"/>
+<text x="251.1" y="402.8" font-size="11" font-weight="700" fill="#0e6b3b">N</text>
+<text x="487.7" y="209.2" font-size="11" font-weight="700" fill="#0e6b3b">1</text>
+<line x1="180.0" y1="431.0" x2="180.0" y2="395.0" stroke="#148c4f" stroke-width="1.6"/>
+<text x="180.0" y="423.4" font-size="11" font-weight="700" fill="#0e6b3b">N</text>
+<text x="180.0" y="394.6" font-size="11" font-weight="700" fill="#0e6b3b">1</text>
+<line x1="180.0" y1="191.0" x2="180.0" y2="155.0" stroke="#148c4f" stroke-width="1.6"/>
+<text x="180.0" y="183.4" font-size="11" font-weight="700" fill="#0e6b3b">N</text>
+<text x="180.0" y="154.6" font-size="11" font-weight="700" fill="#0e6b3b">1</text>
+<g><rect x="40" y="70" width="280" height="85" rx="6" fill="#f6f8f7" stroke="#0e1612" stroke-width="1.2"/>
+<path d="M40 96 V76 a6 6 0 0 1 6 -6 H314 a6 6 0 0 1 6 6 V96 Z" fill="#0e1612"/>
+<text x="50" y="88" font-size="13" font-weight="700" fill="#ffffff">roles</text>
+<text x="50" y="110" font-size="11.5" fill="#0e1612" font-weight="700">code</text>
+<text x="226" y="110" font-size="10.5" fill="#5b6b63">text</text>
+<text x="312" y="110" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">PK</text>
+<text x="50" y="127" font-size="11.5" fill="#0e1612" font-weight="400">name</text>
+<text x="226" y="127" font-size="10.5" fill="#5b6b63">text</text>
+<text x="50" y="144" font-size="11.5" fill="#0e1612" font-weight="400">description</text>
+<text x="226" y="144" font-size="10.5" fill="#5b6b63">text</text>
+</g>
+<g><rect x="40" y="191" width="280" height="204" rx="6" fill="#f6f8f7" stroke="#0e1612" stroke-width="1.2"/>
+<path d="M40 217 V197 a6 6 0 0 1 6 -6 H314 a6 6 0 0 1 6 6 V217 Z" fill="#0e1612"/>
+<text x="50" y="209" font-size="13" font-weight="700" fill="#ffffff">users</text>
+<text x="50" y="231" font-size="11.5" fill="#0e1612" font-weight="700">id</text>
+<text x="226" y="231" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="312" y="231" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">PK</text>
+<text x="50" y="248" font-size="11.5" fill="#0e1612" font-weight="400">username</text>
+<text x="226" y="248" font-size="10.5" fill="#5b6b63">text</text>
+<text x="50" y="265" font-size="11.5" fill="#0e1612" font-weight="400">salt</text>
+<text x="226" y="265" font-size="10.5" fill="#5b6b63">text</text>
+<text x="50" y="282" font-size="11.5" fill="#0e1612" font-weight="400">hash</text>
+<text x="226" y="282" font-size="10.5" fill="#5b6b63">text</text>
+<text x="50" y="299" font-size="11.5" fill="#0e1612" font-weight="400">role</text>
+<text x="226" y="299" font-size="10.5" fill="#5b6b63">text</text>
+<text x="312" y="299" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">FK</text>
+<text x="50" y="316" font-size="11.5" fill="#0e1612" font-weight="400">display_name</text>
+<text x="226" y="316" font-size="10.5" fill="#5b6b63">text</text>
+<text x="50" y="333" font-size="11.5" fill="#0e1612" font-weight="400">active</text>
+<text x="226" y="333" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="50" y="350" font-size="11.5" fill="#0e1612" font-weight="400">created_at</text>
+<text x="226" y="350" font-size="10.5" fill="#5b6b63">text</text>
+<text x="50" y="367" font-size="11.5" fill="#0e1612" font-weight="400">created_by</text>
+<text x="226" y="367" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="312" y="367" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">FK</text>
+<text x="50" y="384" font-size="11.5" fill="#0e1612" font-weight="400">last_login_at</text>
+<text x="226" y="384" font-size="10.5" fill="#5b6b63">text</text>
+</g>
+<g><rect x="40" y="431" width="280" height="68" rx="6" fill="#f6f8f7" stroke="#0e1612" stroke-width="1.2"/>
+<path d="M40 457 V437 a6 6 0 0 1 6 -6 H314 a6 6 0 0 1 6 6 V457 Z" fill="#0e1612"/>
+<text x="50" y="449" font-size="13" font-weight="700" fill="#ffffff">user_sites</text>
+<text x="50" y="471" font-size="11.5" fill="#0e1612" font-weight="700">user_id</text>
+<text x="226" y="471" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="312" y="471" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">PK FK</text>
+<text x="50" y="488" font-size="11.5" fill="#0e1612" font-weight="700">site_id</text>
+<text x="226" y="488" font-size="10.5" fill="#5b6b63">text</text>
+<text x="312" y="488" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">PK FK</text>
+</g>
+<g><rect x="40" y="535" width="280" height="238" rx="6" fill="#f6f8f7" stroke="#0e1612" stroke-width="1.2"/>
+<path d="M40 561 V541 a6 6 0 0 1 6 -6 H314 a6 6 0 0 1 6 6 V561 Z" fill="#0e1612"/>
+<text x="50" y="553" font-size="13" font-weight="700" fill="#ffffff">audit</text>
+<text x="50" y="575" font-size="11.5" fill="#0e1612" font-weight="700">id</text>
+<text x="226" y="575" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="312" y="575" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">PK</text>
+<text x="50" y="592" font-size="11.5" fill="#0e1612" font-weight="400">at</text>
+<text x="226" y="592" font-size="10.5" fill="#5b6b63">text</text>
+<text x="50" y="609" font-size="11.5" fill="#0e1612" font-weight="400">actor</text>
+<text x="226" y="609" font-size="10.5" fill="#5b6b63">text</text>
+<text x="50" y="626" font-size="11.5" fill="#0e1612" font-weight="400">event</text>
+<text x="226" y="626" font-size="10.5" fill="#5b6b63">text</text>
+<text x="50" y="643" font-size="11.5" fill="#0e1612" font-weight="400">site_id</text>
+<text x="226" y="643" font-size="10.5" fill="#5b6b63">text</text>
+<text x="50" y="660" font-size="11.5" fill="#0e1612" font-weight="400">details</text>
+<text x="226" y="660" font-size="10.5" fill="#5b6b63">text</text>
+<text x="50" y="677" font-size="11.5" fill="#0e1612" font-weight="400">user_id</text>
+<text x="226" y="677" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="312" y="677" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">FK</text>
+<text x="50" y="694" font-size="11.5" fill="#0e1612" font-weight="400">role</text>
+<text x="226" y="694" font-size="10.5" fill="#5b6b63">text</text>
+<text x="312" y="694" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">FK</text>
+<text x="50" y="711" font-size="11.5" fill="#0e1612" font-weight="400">load_id</text>
+<text x="226" y="711" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="312" y="711" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">FK</text>
+<text x="50" y="728" font-size="11.5" fill="#0e1612" font-weight="400">result</text>
+<text x="226" y="728" font-size="10.5" fill="#5b6b63">text</text>
+<text x="50" y="745" font-size="11.5" fill="#0e1612" font-weight="400">reason</text>
+<text x="226" y="745" font-size="10.5" fill="#5b6b63">text</text>
+<text x="50" y="762" font-size="11.5" fill="#0e1612" font-weight="400">simulated_at</text>
+<text x="226" y="762" font-size="10.5" fill="#5b6b63">text</text>
+</g>
+<g><rect x="40" y="809" width="280" height="136" rx="6" fill="#f6f8f7" stroke="#0e1612" stroke-width="1.2"/>
+<path d="M40 835 V815 a6 6 0 0 1 6 -6 H314 a6 6 0 0 1 6 6 V835 Z" fill="#0e1612"/>
+<text x="50" y="827" font-size="13" font-weight="700" fill="#ffffff">events</text>
+<text x="50" y="849" font-size="11.5" fill="#0e1612" font-weight="700">id</text>
+<text x="226" y="849" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="312" y="849" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">PK</text>
+<text x="50" y="866" font-size="11.5" fill="#0e1612" font-weight="400">at</text>
+<text x="226" y="866" font-size="10.5" fill="#5b6b63">text</text>
+<text x="50" y="883" font-size="11.5" fill="#0e1612" font-weight="400">user_id</text>
+<text x="226" y="883" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="312" y="883" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">FK</text>
+<text x="50" y="900" font-size="11.5" fill="#0e1612" font-weight="400">site_id</text>
+<text x="226" y="900" font-size="10.5" fill="#5b6b63">text</text>
+<text x="312" y="900" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">FK</text>
+<text x="50" y="917" font-size="11.5" fill="#0e1612" font-weight="400">name</text>
+<text x="226" y="917" font-size="10.5" fill="#5b6b63">text</text>
+<text x="50" y="934" font-size="11.5" fill="#0e1612" font-weight="400">properties</text>
+<text x="226" y="934" font-size="10.5" fill="#5b6b63">text</text>
+</g>
+<g><rect x="40" y="981" width="280" height="170" rx="6" fill="#f6f8f7" stroke="#0e1612" stroke-width="1.2"/>
+<path d="M40 1007 V987 a6 6 0 0 1 6 -6 H314 a6 6 0 0 1 6 6 V1007 Z" fill="#0e1612"/>
+<text x="50" y="999" font-size="13" font-weight="700" fill="#ffffff">error_log</text>
+<text x="50" y="1021" font-size="11.5" fill="#0e1612" font-weight="700">id</text>
+<text x="226" y="1021" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="312" y="1021" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">PK</text>
+<text x="50" y="1038" font-size="11.5" fill="#0e1612" font-weight="400">at</text>
+<text x="226" y="1038" font-size="10.5" fill="#5b6b63">text</text>
+<text x="50" y="1055" font-size="11.5" fill="#0e1612" font-weight="400">level</text>
+<text x="226" y="1055" font-size="10.5" fill="#5b6b63">text</text>
+<text x="50" y="1072" font-size="11.5" fill="#0e1612" font-weight="400">source</text>
+<text x="226" y="1072" font-size="10.5" fill="#5b6b63">text</text>
+<text x="50" y="1089" font-size="11.5" fill="#0e1612" font-weight="400">message</text>
+<text x="226" y="1089" font-size="10.5" fill="#5b6b63">text</text>
+<text x="50" y="1106" font-size="11.5" fill="#0e1612" font-weight="400">stack</text>
+<text x="226" y="1106" font-size="10.5" fill="#5b6b63">text</text>
+<text x="50" y="1123" font-size="11.5" fill="#0e1612" font-weight="400">context</text>
+<text x="226" y="1123" font-size="10.5" fill="#5b6b63">text</text>
+<text x="50" y="1140" font-size="11.5" fill="#0e1612" font-weight="400">request_id</text>
+<text x="226" y="1140" font-size="10.5" fill="#5b6b63">text</text>
+</g>
+<g><rect x="450" y="70" width="280" height="119" rx="6" fill="#f6f8f7" stroke="#0e1612" stroke-width="1.2"/>
+<path d="M450 96 V76 a6 6 0 0 1 6 -6 H724 a6 6 0 0 1 6 6 V96 Z" fill="#0e1612"/>
+<text x="460" y="88" font-size="13" font-weight="700" fill="#ffffff">sites</text>
+<text x="460" y="110" font-size="11.5" fill="#0e1612" font-weight="700">id</text>
+<text x="636" y="110" font-size="10.5" fill="#5b6b63">text</text>
+<text x="722" y="110" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">PK</text>
+<text x="460" y="127" font-size="11.5" fill="#0e1612" font-weight="400">name</text>
+<text x="636" y="127" font-size="10.5" fill="#5b6b63">text</text>
+<text x="460" y="144" font-size="11.5" fill="#0e1612" font-weight="400">city</text>
+<text x="636" y="144" font-size="10.5" fill="#5b6b63">text</text>
+<text x="460" y="161" font-size="11.5" fill="#0e1612" font-weight="400">timezone</text>
+<text x="636" y="161" font-size="10.5" fill="#5b6b63">text</text>
+<text x="460" y="178" font-size="11.5" fill="#0e1612" font-weight="400">created_at</text>
+<text x="636" y="178" font-size="10.5" fill="#5b6b63">text</text>
+</g>
+<g><rect x="450" y="225" width="280" height="119" rx="6" fill="#f6f8f7" stroke="#0e1612" stroke-width="1.2"/>
+<path d="M450 251 V231 a6 6 0 0 1 6 -6 H724 a6 6 0 0 1 6 6 V251 Z" fill="#0e1612"/>
+<text x="460" y="243" font-size="13" font-weight="700" fill="#ffffff">site_schedules</text>
+<text x="460" y="265" font-size="11.5" fill="#0e1612" font-weight="700">site_id</text>
+<text x="636" y="265" font-size="10.5" fill="#5b6b63">text</text>
+<text x="722" y="265" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">PK FK</text>
+<text x="460" y="282" font-size="11.5" fill="#0e1612" font-weight="700">weekday</text>
+<text x="636" y="282" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="722" y="282" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">PK</text>
+<text x="460" y="299" font-size="11.5" fill="#0e1612" font-weight="400">closed</text>
+<text x="636" y="299" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="460" y="316" font-size="11.5" fill="#0e1612" font-weight="400">opens_at</text>
+<text x="636" y="316" font-size="10.5" fill="#5b6b63">text</text>
+<text x="460" y="333" font-size="11.5" fill="#0e1612" font-weight="400">closes_at</text>
+<text x="636" y="333" font-size="10.5" fill="#5b6b63">text</text>
+</g>
+<g><rect x="450" y="380" width="280" height="153" rx="6" fill="#f6f8f7" stroke="#0e1612" stroke-width="1.2"/>
+<path d="M450 406 V386 a6 6 0 0 1 6 -6 H724 a6 6 0 0 1 6 6 V406 Z" fill="#0e1612"/>
+<text x="460" y="398" font-size="13" font-weight="700" fill="#ffffff">tariffs</text>
+<text x="460" y="420" font-size="11.5" fill="#0e1612" font-weight="700">id</text>
+<text x="636" y="420" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="722" y="420" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">PK</text>
+<text x="460" y="437" font-size="11.5" fill="#0e1612" font-weight="400">site_id</text>
+<text x="636" y="437" font-size="10.5" fill="#5b6b63">text</text>
+<text x="722" y="437" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">FK</text>
+<text x="460" y="454" font-size="11.5" fill="#0e1612" font-weight="400">cop_per_kwh</text>
+<text x="636" y="454" font-size="10.5" fill="#5b6b63">real</text>
+<text x="460" y="471" font-size="11.5" fill="#0e1612" font-weight="400">effective_from</text>
+<text x="636" y="471" font-size="10.5" fill="#5b6b63">text</text>
+<text x="460" y="488" font-size="11.5" fill="#0e1612" font-weight="400">created_by</text>
+<text x="636" y="488" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="722" y="488" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">FK</text>
+<text x="460" y="505" font-size="11.5" fill="#0e1612" font-weight="400">created_at</text>
+<text x="636" y="505" font-size="10.5" fill="#5b6b63">text</text>
+<text x="460" y="522" font-size="11.5" fill="#0e1612" font-weight="400">note</text>
+<text x="636" y="522" font-size="10.5" fill="#5b6b63">text</text>
+</g>
+<g><rect x="450" y="569" width="280" height="170" rx="6" fill="#f6f8f7" stroke="#0e1612" stroke-width="1.2"/>
+<path d="M450 595 V575 a6 6 0 0 1 6 -6 H724 a6 6 0 0 1 6 6 V595 Z" fill="#0e1612"/>
+<text x="460" y="587" font-size="13" font-weight="700" fill="#ffffff">settings</text>
+<text x="460" y="609" font-size="11.5" fill="#0e1612" font-weight="700">site_id</text>
+<text x="636" y="609" font-size="10.5" fill="#5b6b63">text</text>
+<text x="722" y="609" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">PK FK</text>
+<text x="460" y="626" font-size="11.5" fill="#0e1612" font-weight="400">investment_cop</text>
+<text x="636" y="626" font-size="10.5" fill="#5b6b63">real</text>
+<text x="460" y="643" font-size="11.5" fill="#0e1612" font-weight="400">emission_factor_kg_per_kwh</text>
+<text x="636" y="643" font-size="10.5" fill="#5b6b63">real</text>
+<text x="460" y="660" font-size="11.5" fill="#0e1612" font-weight="400">emission_factor_source</text>
+<text x="636" y="660" font-size="10.5" fill="#5b6b63">text</text>
+<text x="460" y="677" font-size="11.5" fill="#0e1612" font-weight="400">alert_threshold_pct</text>
+<text x="636" y="677" font-size="10.5" fill="#5b6b63">real</text>
+<text x="460" y="694" font-size="11.5" fill="#0e1612" font-weight="400">alert_window_minutes</text>
+<text x="636" y="694" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="460" y="711" font-size="11.5" fill="#0e1612" font-weight="400">updated_by</text>
+<text x="636" y="711" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="722" y="711" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">FK</text>
+<text x="460" y="728" font-size="11.5" fill="#0e1612" font-weight="400">updated_at</text>
+<text x="636" y="728" font-size="10.5" fill="#5b6b63">text</text>
+</g>
+<g><rect x="860" y="70" width="280" height="204" rx="6" fill="#f6f8f7" stroke="#0e1612" stroke-width="1.2"/>
+<path d="M860 96 V76 a6 6 0 0 1 6 -6 H1134 a6 6 0 0 1 6 6 V96 Z" fill="#0e1612"/>
+<text x="870" y="88" font-size="13" font-weight="700" fill="#ffffff">loads</text>
+<text x="870" y="110" font-size="11.5" fill="#0e1612" font-weight="700">id</text>
+<text x="1046" y="110" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="1132" y="110" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">PK</text>
+<text x="870" y="127" font-size="11.5" fill="#0e1612" font-weight="400">site_id</text>
+<text x="1046" y="127" font-size="10.5" fill="#5b6b63">text</text>
+<text x="1132" y="127" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">FK</text>
+<text x="870" y="144" font-size="11.5" fill="#0e1612" font-weight="400">code</text>
+<text x="1046" y="144" font-size="10.5" fill="#5b6b63">text</text>
+<text x="870" y="161" font-size="11.5" fill="#0e1612" font-weight="400">name</text>
+<text x="1046" y="161" font-size="10.5" fill="#5b6b63">text</text>
+<text x="870" y="178" font-size="11.5" fill="#0e1612" font-weight="400">icon</text>
+<text x="1046" y="178" font-size="10.5" fill="#5b6b63">text</text>
+<text x="870" y="195" font-size="11.5" fill="#0e1612" font-weight="400">typical_power_w</text>
+<text x="1046" y="195" font-size="10.5" fill="#5b6b63">real</text>
+<text x="870" y="212" font-size="11.5" fill="#0e1612" font-weight="400">criticality</text>
+<text x="1046" y="212" font-size="10.5" fill="#5b6b63">text</text>
+<text x="870" y="229" font-size="11.5" fill="#0e1612" font-weight="400">control_mode</text>
+<text x="1046" y="229" font-size="10.5" fill="#5b6b63">text</text>
+<text x="870" y="246" font-size="11.5" fill="#0e1612" font-weight="400">power_state</text>
+<text x="1046" y="246" font-size="10.5" fill="#5b6b63">text</text>
+<text x="870" y="263" font-size="11.5" fill="#0e1612" font-weight="400">created_at</text>
+<text x="1046" y="263" font-size="10.5" fill="#5b6b63">text</text>
+</g>
+<g><rect x="860" y="310" width="280" height="170" rx="6" fill="#f6f8f7" stroke="#0e1612" stroke-width="1.2"/>
+<path d="M860 336 V316 a6 6 0 0 1 6 -6 H1134 a6 6 0 0 1 6 6 V336 Z" fill="#0e1612"/>
+<text x="870" y="328" font-size="13" font-weight="700" fill="#ffffff">modules</text>
+<text x="870" y="350" font-size="11.5" fill="#0e1612" font-weight="700">id</text>
+<text x="1046" y="350" font-size="10.5" fill="#5b6b63">text</text>
+<text x="1132" y="350" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">PK</text>
+<text x="870" y="367" font-size="11.5" fill="#0e1612" font-weight="400">site_id</text>
+<text x="1046" y="367" font-size="10.5" fill="#5b6b63">text</text>
+<text x="1132" y="367" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">FK</text>
+<text x="870" y="384" font-size="11.5" fill="#0e1612" font-weight="400">load_id</text>
+<text x="1046" y="384" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="1132" y="384" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">FK</text>
+<text x="870" y="401" font-size="11.5" fill="#0e1612" font-weight="400">manufacturer</text>
+<text x="1046" y="401" font-size="10.5" fill="#5b6b63">text</text>
+<text x="870" y="418" font-size="11.5" fill="#0e1612" font-weight="400">status</text>
+<text x="1046" y="418" font-size="10.5" fill="#5b6b63">text</text>
+<text x="870" y="435" font-size="11.5" fill="#0e1612" font-weight="400">last_heartbeat</text>
+<text x="1046" y="435" font-size="10.5" fill="#5b6b63">text</text>
+<text x="870" y="452" font-size="11.5" fill="#0e1612" font-weight="400">registered_at</text>
+<text x="1046" y="452" font-size="10.5" fill="#5b6b63">text</text>
+<text x="870" y="469" font-size="11.5" fill="#0e1612" font-weight="400">registered_by</text>
+<text x="1046" y="469" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="1132" y="469" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">FK</text>
+</g>
+<g><rect x="860" y="516" width="280" height="187" rx="6" fill="#f6f8f7" stroke="#0e1612" stroke-width="1.2"/>
+<path d="M860 542 V522 a6 6 0 0 1 6 -6 H1134 a6 6 0 0 1 6 6 V542 Z" fill="#0e1612"/>
+<text x="870" y="534" font-size="13" font-weight="700" fill="#ffffff">readings</text>
+<text x="870" y="556" font-size="11.5" fill="#0e1612" font-weight="700">id</text>
+<text x="1046" y="556" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="1132" y="556" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">PK</text>
+<text x="870" y="573" font-size="11.5" fill="#0e1612" font-weight="400">load_id</text>
+<text x="1046" y="573" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="1132" y="573" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">FK</text>
+<text x="870" y="590" font-size="11.5" fill="#0e1612" font-weight="400">module_id</text>
+<text x="1046" y="590" font-size="10.5" fill="#5b6b63">text</text>
+<text x="1132" y="590" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">FK</text>
+<text x="870" y="607" font-size="11.5" fill="#0e1612" font-weight="400">ts</text>
+<text x="1046" y="607" font-size="10.5" fill="#5b6b63">text</text>
+<text x="870" y="624" font-size="11.5" fill="#0e1612" font-weight="400">power_w</text>
+<text x="1046" y="624" font-size="10.5" fill="#5b6b63">real</text>
+<text x="870" y="641" font-size="11.5" fill="#0e1612" font-weight="400">voltage_v</text>
+<text x="1046" y="641" font-size="10.5" fill="#5b6b63">real</text>
+<text x="870" y="658" font-size="11.5" fill="#0e1612" font-weight="400">current_a</text>
+<text x="1046" y="658" font-size="10.5" fill="#5b6b63">real</text>
+<text x="870" y="675" font-size="11.5" fill="#0e1612" font-weight="400">energy_kwh</text>
+<text x="1046" y="675" font-size="10.5" fill="#5b6b63">real</text>
+<text x="870" y="692" font-size="11.5" fill="#0e1612" font-weight="400">source</text>
+<text x="1046" y="692" font-size="10.5" fill="#5b6b63">text</text>
+</g>
+<g><rect x="860" y="739" width="280" height="136" rx="6" fill="#f6f8f7" stroke="#0e1612" stroke-width="1.2"/>
+<path d="M860 765 V745 a6 6 0 0 1 6 -6 H1134 a6 6 0 0 1 6 6 V765 Z" fill="#0e1612"/>
+<text x="870" y="757" font-size="13" font-weight="700" fill="#ffffff">readings_hourly</text>
+<text x="870" y="779" font-size="11.5" fill="#0e1612" font-weight="700">load_id</text>
+<text x="1046" y="779" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="1132" y="779" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">PK FK</text>
+<text x="870" y="796" font-size="11.5" fill="#0e1612" font-weight="700">hour_start</text>
+<text x="1046" y="796" font-size="10.5" fill="#5b6b63">text</text>
+<text x="1132" y="796" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">PK</text>
+<text x="870" y="813" font-size="11.5" fill="#0e1612" font-weight="400">avg_power_w</text>
+<text x="1046" y="813" font-size="10.5" fill="#5b6b63">real</text>
+<text x="870" y="830" font-size="11.5" fill="#0e1612" font-weight="400">max_power_w</text>
+<text x="1046" y="830" font-size="10.5" fill="#5b6b63">real</text>
+<text x="870" y="847" font-size="11.5" fill="#0e1612" font-weight="400">energy_kwh</text>
+<text x="1046" y="847" font-size="10.5" fill="#5b6b63">real</text>
+<text x="870" y="864" font-size="11.5" fill="#0e1612" font-weight="400">samples</text>
+<text x="1046" y="864" font-size="10.5" fill="#5b6b63">integer</text>
+</g>
+<g><rect x="1270" y="70" width="280" height="238" rx="6" fill="#f6f8f7" stroke="#0e1612" stroke-width="1.2"/>
+<path d="M1270 96 V76 a6 6 0 0 1 6 -6 H1544 a6 6 0 0 1 6 6 V96 Z" fill="#0e1612"/>
+<text x="1280" y="88" font-size="13" font-weight="700" fill="#ffffff">baselines</text>
+<text x="1280" y="110" font-size="11.5" fill="#0e1612" font-weight="700">id</text>
+<text x="1456" y="110" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="1542" y="110" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">PK</text>
+<text x="1280" y="127" font-size="11.5" fill="#0e1612" font-weight="400">load_id</text>
+<text x="1456" y="127" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="1542" y="127" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">FK</text>
+<text x="1280" y="144" font-size="11.5" fill="#0e1612" font-weight="400">day_type</text>
+<text x="1456" y="144" font-size="10.5" fill="#5b6b63">text</text>
+<text x="1280" y="161" font-size="11.5" fill="#0e1612" font-weight="400">hour</text>
+<text x="1456" y="161" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="1280" y="178" font-size="11.5" fill="#0e1612" font-weight="400">mean_w</text>
+<text x="1456" y="178" font-size="10.5" fill="#5b6b63">real</text>
+<text x="1280" y="195" font-size="11.5" fill="#0e1612" font-weight="400">std_w</text>
+<text x="1456" y="195" font-size="10.5" fill="#5b6b63">real</text>
+<text x="1280" y="212" font-size="11.5" fill="#0e1612" font-weight="400">band_low_w</text>
+<text x="1456" y="212" font-size="10.5" fill="#5b6b63">real</text>
+<text x="1280" y="229" font-size="11.5" fill="#0e1612" font-weight="400">band_high_w</text>
+<text x="1456" y="229" font-size="10.5" fill="#5b6b63">real</text>
+<text x="1280" y="246" font-size="11.5" fill="#0e1612" font-weight="400">sample_days</text>
+<text x="1456" y="246" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="1280" y="263" font-size="11.5" fill="#0e1612" font-weight="400">window_start</text>
+<text x="1456" y="263" font-size="10.5" fill="#5b6b63">text</text>
+<text x="1280" y="280" font-size="11.5" fill="#0e1612" font-weight="400">window_end</text>
+<text x="1456" y="280" font-size="10.5" fill="#5b6b63">text</text>
+<text x="1280" y="297" font-size="11.5" fill="#0e1612" font-weight="400">computed_at</text>
+<text x="1456" y="297" font-size="10.5" fill="#5b6b63">text</text>
+</g>
+<g><rect x="1270" y="344" width="280" height="255" rx="6" fill="#f6f8f7" stroke="#0e1612" stroke-width="1.2"/>
+<path d="M1270 370 V350 a6 6 0 0 1 6 -6 H1544 a6 6 0 0 1 6 6 V370 Z" fill="#0e1612"/>
+<text x="1280" y="362" font-size="13" font-weight="700" fill="#ffffff">alerts</text>
+<text x="1280" y="384" font-size="11.5" fill="#0e1612" font-weight="700">id</text>
+<text x="1456" y="384" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="1542" y="384" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">PK</text>
+<text x="1280" y="401" font-size="11.5" fill="#0e1612" font-weight="400">site_id</text>
+<text x="1456" y="401" font-size="10.5" fill="#5b6b63">text</text>
+<text x="1542" y="401" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">FK</text>
+<text x="1280" y="418" font-size="11.5" fill="#0e1612" font-weight="400">load_id</text>
+<text x="1456" y="418" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="1542" y="418" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">FK</text>
+<text x="1280" y="435" font-size="11.5" fill="#0e1612" font-weight="400">type</text>
+<text x="1456" y="435" font-size="10.5" fill="#5b6b63">text</text>
+<text x="1280" y="452" font-size="11.5" fill="#0e1612" font-weight="400">status</text>
+<text x="1456" y="452" font-size="10.5" fill="#5b6b63">text</text>
+<text x="1280" y="469" font-size="11.5" fill="#0e1612" font-weight="400">detected_at</text>
+<text x="1456" y="469" font-size="10.5" fill="#5b6b63">text</text>
+<text x="1280" y="486" font-size="11.5" fill="#0e1612" font-weight="400">excess_pct</text>
+<text x="1456" y="486" font-size="10.5" fill="#5b6b63">real</text>
+<text x="1280" y="503" font-size="11.5" fill="#0e1612" font-weight="400">excess_cost_per_hour_cop</text>
+<text x="1456" y="503" font-size="10.5" fill="#5b6b63">real</text>
+<text x="1280" y="520" font-size="11.5" fill="#0e1612" font-weight="400">projected_monthly_cost_cop</text>
+<text x="1456" y="520" font-size="10.5" fill="#5b6b63">real</text>
+<text x="1280" y="537" font-size="11.5" fill="#0e1612" font-weight="400">message</text>
+<text x="1456" y="537" font-size="10.5" fill="#5b6b63">text</text>
+<text x="1280" y="554" font-size="11.5" fill="#0e1612" font-weight="400">details</text>
+<text x="1456" y="554" font-size="10.5" fill="#5b6b63">text</text>
+<text x="1280" y="571" font-size="11.5" fill="#0e1612" font-weight="400">reviewed_by</text>
+<text x="1456" y="571" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="1542" y="571" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">FK</text>
+<text x="1280" y="588" font-size="11.5" fill="#0e1612" font-weight="400">reviewed_at</text>
+<text x="1456" y="588" font-size="10.5" fill="#5b6b63">text</text>
+</g>
+<g><rect x="1270" y="635" width="280" height="357" rx="6" fill="#f6f8f7" stroke="#0e1612" stroke-width="1.2"/>
+<path d="M1270 661 V641 a6 6 0 0 1 6 -6 H1544 a6 6 0 0 1 6 6 V661 Z" fill="#0e1612"/>
+<text x="1280" y="653" font-size="13" font-weight="700" fill="#ffffff">recommendations</text>
+<text x="1280" y="675" font-size="11.5" fill="#0e1612" font-weight="700">id</text>
+<text x="1456" y="675" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="1542" y="675" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">PK</text>
+<text x="1280" y="692" font-size="11.5" fill="#0e1612" font-weight="400">site_id</text>
+<text x="1456" y="692" font-size="10.5" fill="#5b6b63">text</text>
+<text x="1542" y="692" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">FK</text>
+<text x="1280" y="709" font-size="11.5" fill="#0e1612" font-weight="400">load_id</text>
+<text x="1456" y="709" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="1542" y="709" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">FK</text>
+<text x="1280" y="726" font-size="11.5" fill="#0e1612" font-weight="400">type</text>
+<text x="1456" y="726" font-size="10.5" fill="#5b6b63">text</text>
+<text x="1280" y="743" font-size="11.5" fill="#0e1612" font-weight="400">title</text>
+<text x="1456" y="743" font-size="10.5" fill="#5b6b63">text</text>
+<text x="1280" y="760" font-size="11.5" fill="#0e1612" font-weight="400">assumption</text>
+<text x="1456" y="760" font-size="10.5" fill="#5b6b63">text</text>
+<text x="1280" y="777" font-size="11.5" fill="#0e1612" font-weight="400">monthly_savings_kwh</text>
+<text x="1456" y="777" font-size="10.5" fill="#5b6b63">real</text>
+<text x="1280" y="794" font-size="11.5" fill="#0e1612" font-weight="400">monthly_savings_cop</text>
+<text x="1456" y="794" font-size="10.5" fill="#5b6b63">real</text>
+<text x="1280" y="811" font-size="11.5" fill="#0e1612" font-weight="400">score</text>
+<text x="1456" y="811" font-size="10.5" fill="#5b6b63">real</text>
+<text x="1280" y="828" font-size="11.5" fill="#0e1612" font-weight="400">confidence</text>
+<text x="1456" y="828" font-size="10.5" fill="#5b6b63">real</text>
+<text x="1280" y="845" font-size="11.5" fill="#0e1612" font-weight="400">status</text>
+<text x="1456" y="845" font-size="10.5" fill="#5b6b63">text</text>
+<text x="1280" y="862" font-size="11.5" fill="#0e1612" font-weight="400">created_at</text>
+<text x="1456" y="862" font-size="10.5" fill="#5b6b63">text</text>
+<text x="1280" y="879" font-size="11.5" fill="#0e1612" font-weight="400">decided_at</text>
+<text x="1456" y="879" font-size="10.5" fill="#5b6b63">text</text>
+<text x="1280" y="896" font-size="11.5" fill="#0e1612" font-weight="400">decided_by</text>
+<text x="1456" y="896" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="1542" y="896" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">FK</text>
+<text x="1280" y="913" font-size="11.5" fill="#0e1612" font-weight="400">accepted_at</text>
+<text x="1456" y="913" font-size="10.5" fill="#5b6b63">text</text>
+<text x="1280" y="930" font-size="11.5" fill="#0e1612" font-weight="400">postponed_until</text>
+<text x="1456" y="930" font-size="10.5" fill="#5b6b63">text</text>
+<text x="1280" y="947" font-size="11.5" fill="#0e1612" font-weight="400">reason</text>
+<text x="1456" y="947" font-size="10.5" fill="#5b6b63">text</text>
+<text x="1280" y="964" font-size="11.5" fill="#0e1612" font-weight="400">baseline_window_start</text>
+<text x="1456" y="964" font-size="10.5" fill="#5b6b63">text</text>
+<text x="1280" y="981" font-size="11.5" fill="#0e1612" font-weight="400">baseline_window_end</text>
+<text x="1456" y="981" font-size="10.5" fill="#5b6b63">text</text>
+</g>
+<g><rect x="1270" y="1028" width="280" height="272" rx="6" fill="#f6f8f7" stroke="#0e1612" stroke-width="1.2"/>
+<path d="M1270 1054 V1034 a6 6 0 0 1 6 -6 H1544 a6 6 0 0 1 6 6 V1054 Z" fill="#0e1612"/>
+<text x="1280" y="1046" font-size="13" font-weight="700" fill="#ffffff">control_actions</text>
+<text x="1280" y="1068" font-size="11.5" fill="#0e1612" font-weight="700">id</text>
+<text x="1456" y="1068" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="1542" y="1068" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">PK</text>
+<text x="1280" y="1085" font-size="11.5" fill="#0e1612" font-weight="400">site_id</text>
+<text x="1456" y="1085" font-size="10.5" fill="#5b6b63">text</text>
+<text x="1542" y="1085" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">FK</text>
+<text x="1280" y="1102" font-size="11.5" fill="#0e1612" font-weight="400">load_id</text>
+<text x="1456" y="1102" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="1542" y="1102" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">FK</text>
+<text x="1280" y="1119" font-size="11.5" fill="#0e1612" font-weight="400">origin</text>
+<text x="1456" y="1119" font-size="10.5" fill="#5b6b63">text</text>
+<text x="1280" y="1136" font-size="11.5" fill="#0e1612" font-weight="400">recommendation_id</text>
+<text x="1456" y="1136" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="1542" y="1136" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">FK</text>
+<text x="1280" y="1153" font-size="11.5" fill="#0e1612" font-weight="400">batch_id</text>
+<text x="1456" y="1153" font-size="10.5" fill="#5b6b63">text</text>
+<text x="1280" y="1170" font-size="11.5" fill="#0e1612" font-weight="400">action</text>
+<text x="1456" y="1170" font-size="10.5" fill="#5b6b63">text</text>
+<text x="1280" y="1187" font-size="11.5" fill="#0e1612" font-weight="400">status</text>
+<text x="1456" y="1187" font-size="10.5" fill="#5b6b63">text</text>
+<text x="1280" y="1204" font-size="11.5" fill="#0e1612" font-weight="400">requested_by</text>
+<text x="1456" y="1204" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="1542" y="1204" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">FK</text>
+<text x="1280" y="1221" font-size="11.5" fill="#0e1612" font-weight="400">decided_by</text>
+<text x="1456" y="1221" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="1542" y="1221" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">FK</text>
+<text x="1280" y="1238" font-size="11.5" fill="#0e1612" font-weight="400">reason</text>
+<text x="1456" y="1238" font-size="10.5" fill="#5b6b63">text</text>
+<text x="1280" y="1255" font-size="11.5" fill="#0e1612" font-weight="400">requested_at</text>
+<text x="1456" y="1255" font-size="10.5" fill="#5b6b63">text</text>
+<text x="1280" y="1272" font-size="11.5" fill="#0e1612" font-weight="400">decided_at</text>
+<text x="1456" y="1272" font-size="10.5" fill="#5b6b63">text</text>
+<text x="1280" y="1289" font-size="11.5" fill="#0e1612" font-weight="400">executed_at</text>
+<text x="1456" y="1289" font-size="10.5" fill="#5b6b63">text</text>
+</g>
+<g><rect x="40" y="1376" width="280" height="119" rx="6" fill="#f6f8f7" stroke="#0e1612" stroke-width="1.2"/>
+<path d="M40 1402 V1382 a6 6 0 0 1 6 -6 H314 a6 6 0 0 1 6 6 V1402 Z" fill="#5b6b63"/>
+<text x="50" y="1394" font-size="13" font-weight="700" fill="#ffffff">telemetry</text>
+<text x="50" y="1416" font-size="11.5" fill="#0e1612" font-weight="700">id</text>
+<text x="226" y="1416" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="312" y="1416" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">PK</text>
+<text x="50" y="1433" font-size="11.5" fill="#0e1612" font-weight="400">site_id</text>
+<text x="226" y="1433" font-size="10.5" fill="#5b6b63">text</text>
+<text x="50" y="1450" font-size="11.5" fill="#0e1612" font-weight="400">gateway_id</text>
+<text x="226" y="1450" font-size="10.5" fill="#5b6b63">text</text>
+<text x="50" y="1467" font-size="11.5" fill="#0e1612" font-weight="400">received_at</text>
+<text x="226" y="1467" font-size="10.5" fill="#5b6b63">text</text>
+<text x="50" y="1484" font-size="11.5" fill="#0e1612" font-weight="400">reading</text>
+<text x="226" y="1484" font-size="10.5" fill="#5b6b63">text</text>
+</g>
+<g><rect x="360" y="1376" width="280" height="153" rx="6" fill="#f6f8f7" stroke="#0e1612" stroke-width="1.2"/>
+<path d="M360 1402 V1382 a6 6 0 0 1 6 -6 H634 a6 6 0 0 1 6 6 V1402 Z" fill="#5b6b63"/>
+<text x="370" y="1394" font-size="13" font-weight="700" fill="#ffffff">control_requests</text>
+<text x="370" y="1416" font-size="11.5" fill="#0e1612" font-weight="700">id</text>
+<text x="546" y="1416" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="632" y="1416" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">PK</text>
+<text x="370" y="1433" font-size="11.5" fill="#0e1612" font-weight="400">site_id</text>
+<text x="546" y="1433" font-size="10.5" fill="#5b6b63">text</text>
+<text x="370" y="1450" font-size="11.5" fill="#0e1612" font-weight="400">load_id</text>
+<text x="546" y="1450" font-size="10.5" fill="#5b6b63">text</text>
+<text x="370" y="1467" font-size="11.5" fill="#0e1612" font-weight="400">action</text>
+<text x="546" y="1467" font-size="10.5" fill="#5b6b63">text</text>
+<text x="370" y="1484" font-size="11.5" fill="#0e1612" font-weight="400">status</text>
+<text x="546" y="1484" font-size="10.5" fill="#5b6b63">text</text>
+<text x="370" y="1501" font-size="11.5" fill="#0e1612" font-weight="400">requested_by</text>
+<text x="546" y="1501" font-size="10.5" fill="#5b6b63">text</text>
+<text x="370" y="1518" font-size="11.5" fill="#0e1612" font-weight="400">created_at</text>
+<text x="546" y="1518" font-size="10.5" fill="#5b6b63">text</text>
+</g>
+<g><rect x="680" y="1376" width="280" height="102" rx="6" fill="#f6f8f7" stroke="#0e1612" stroke-width="1.2"/>
+<path d="M680 1402 V1382 a6 6 0 0 1 6 -6 H954 a6 6 0 0 1 6 6 V1402 Z" fill="#5b6b63"/>
+<text x="690" y="1394" font-size="13" font-weight="700" fill="#ffffff">schema_migrations</text>
+<text x="690" y="1416" font-size="11.5" fill="#0e1612" font-weight="700">version</text>
+<text x="866" y="1416" font-size="10.5" fill="#5b6b63">integer</text>
+<text x="952" y="1416" font-size="10" text-anchor="end" font-weight="700" fill="#148c4f">PK</text>
+<text x="690" y="1433" font-size="11.5" fill="#0e1612" font-weight="400">name</text>
+<text x="866" y="1433" font-size="10.5" fill="#5b6b63">text</text>
+<text x="690" y="1450" font-size="11.5" fill="#0e1612" font-weight="400">checksum</text>
+<text x="866" y="1450" font-size="10.5" fill="#5b6b63">text</text>
+<text x="690" y="1467" font-size="11.5" fill="#0e1612" font-weight="400">applied_at</text>
+<text x="866" y="1467" font-size="10.5" fill="#5b6b63">text</text>
+</g>
+<line x1="640" y1="1551" x2="680" y2="1551" stroke="#148c4f" stroke-width="1.6"/><text x="688" y="1555" font-size="11" fill="#0e1612">Relación estructural (N : 1)</text>
+<line x1="900" y1="1551" x2="940" y2="1551" stroke="#b6c2bb" stroke-dasharray="4 4"/><text x="948" y="1555" font-size="11" fill="#0e1612">Responsable de una acción (usuario)</text>
+</svg>

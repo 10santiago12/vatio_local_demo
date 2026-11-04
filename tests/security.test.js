@@ -14,7 +14,7 @@ async function call(url, options = {}) {
   return { response, body: await response.json() };
 }
 before(async () => {
-  child = spawn(process.execPath, ['server.js'], { cwd: path.join(__dirname, '..'), env: {...process.env, PORT: String(port), HOST: '127.0.0.1', VATIO_DB: path.join(temp, 'test.sqlite'), VATIO_ADMIN_PASSWORD: 'test-only-strong-password', VATIO_DEVICE_KEY: 'test-device-secret'} });
+  child = spawn(process.execPath, ['server.js'], { cwd: path.join(__dirname, '..'), env: {...process.env, PORT: String(port), HOST: '127.0.0.1', APP_ENV: 'local', VATIO_ENV_FILE: path.join(temp, 'absent.env'), VATIO_DB: path.join(temp, 'test.sqlite'), VATIO_ADMIN_PASSWORD: 'test-only-strong-password', VATIO_DEVICE_KEY: 'test-device-secret'} });
   for (let n = 0; n < 100; n++) {
     try { await fetch(base + '/api/health'); return; } catch { await new Promise(r => setTimeout(r, 100)); }
   }
@@ -58,7 +58,7 @@ test('telemetry is restored after server restart', async () => {
   const ingest=await call('/api/telemetry',{method:'POST',headers:{'content-type':'application/json','x-device-key':'test-device-secret'},body:JSON.stringify(payload)});
   assert.equal(ingest.response.status,200);
   const closed = new Promise(r => child.once('exit',r)); child.kill(); await closed;
-  child = spawn(process.execPath,['server.js'],{cwd:path.join(__dirname,'..'),env:{...process.env,PORT:String(port),HOST:'127.0.0.1',VATIO_DB:path.join(temp,'test.sqlite'),VATIO_ADMIN_PASSWORD:'test-only-strong-password',VATIO_DEVICE_KEY:'test-device-secret'}});
+  child = spawn(process.execPath,['server.js'],{cwd:path.join(__dirname,'..'),env:{...process.env,PORT:String(port),HOST:'127.0.0.1',APP_ENV:'local',VATIO_ENV_FILE:path.join(temp,'absent.env'),VATIO_DB:path.join(temp,'test.sqlite'),VATIO_ADMIN_PASSWORD:'test-only-strong-password',VATIO_DEVICE_KEY:'test-device-secret'}});
   for (let n=0;n<100;n++) { try { await fetch(base+'/api/health'); break; } catch { await new Promise(r=>setTimeout(r,100)); } }
   const login=await call('/api/auth/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({username:'admin',password:'test-only-strong-password'})});
   const cookie=login.response.headers.get('set-cookie').split(';')[0];

@@ -1,0 +1,248 @@
+erDiagram
+  users |o--o{ alerts : "reviewed_by"
+  loads ||--o{ alerts : "load_id"
+  sites ||--o{ alerts : "site_id"
+  loads |o--o{ audit : "load_id"
+  roles |o--o{ audit : "role"
+  users |o--o{ audit : "user_id"
+  loads ||--o{ baselines : "load_id"
+  users |o--o{ control_actions : "decided_by"
+  users |o--o{ control_actions : "requested_by"
+  recommendations |o--o{ control_actions : "recommendation_id"
+  loads ||--o{ control_actions : "load_id"
+  sites ||--o{ control_actions : "site_id"
+  sites |o--o{ events : "site_id"
+  users |o--o{ events : "user_id"
+  sites ||--o{ loads : "site_id"
+  users |o--o{ modules : "registered_by"
+  loads |o--o{ modules : "load_id"
+  sites ||--o{ modules : "site_id"
+  modules |o--o{ readings : "module_id"
+  loads ||--o{ readings : "load_id"
+  loads ||--o{ readings_hourly : "load_id"
+  users |o--o{ recommendations : "decided_by"
+  loads ||--o{ recommendations : "load_id"
+  sites ||--o{ recommendations : "site_id"
+  users |o--o{ settings : "updated_by"
+  sites |o--o| settings : "site_id"
+  sites ||--o{ site_schedules : "site_id"
+  users |o--o{ tariffs : "created_by"
+  sites ||--o{ tariffs : "site_id"
+  sites ||--o{ user_sites : "site_id"
+  users ||--o{ user_sites : "user_id"
+  roles ||--o{ users : "role"
+  alerts {
+    int id PK
+    string site_id FK
+    int load_id FK
+    string type
+    string status
+    string detected_at
+    float excess_pct
+    float excess_cost_per_hour_cop
+    float projected_monthly_cost_cop
+    string message
+    string details
+    int reviewed_by FK
+    string reviewed_at
+  }
+  audit {
+    int id PK
+    string at
+    string actor
+    string event
+    string site_id
+    string details
+    int user_id FK
+    string role FK
+    int load_id FK
+    string result
+    string reason
+    string simulated_at
+  }
+  baselines {
+    int id PK
+    int load_id FK
+    string day_type
+    int hour
+    float mean_w
+    float std_w
+    float band_low_w
+    float band_high_w
+    int sample_days
+    string window_start
+    string window_end
+    string computed_at
+  }
+  control_actions {
+    int id PK
+    string site_id FK
+    int load_id FK
+    string origin
+    int recommendation_id FK
+    string batch_id
+    string action
+    string status
+    int requested_by FK
+    int decided_by FK
+    string reason
+    string requested_at
+    string decided_at
+    string executed_at
+  }
+  control_requests {
+    int id PK
+    string site_id
+    string load_id
+    string action
+    string status
+    string requested_by
+    string created_at
+  }
+  error_log {
+    int id PK
+    string at
+    string level
+    string source
+    string message
+    string stack
+    string context
+    string request_id
+  }
+  events {
+    int id PK
+    string at
+    int user_id FK
+    string site_id FK
+    string name
+    string properties
+  }
+  loads {
+    int id PK
+    string site_id FK
+    string code
+    string name
+    string icon
+    float typical_power_w
+    string criticality
+    string control_mode
+    string power_state
+    string created_at
+  }
+  modules {
+    string id PK
+    string site_id FK
+    int load_id FK
+    string manufacturer
+    string status
+    string last_heartbeat
+    string registered_at
+    int registered_by FK
+  }
+  readings {
+    int id PK
+    int load_id FK
+    string module_id FK
+    string ts
+    float power_w
+    float voltage_v
+    float current_a
+    float energy_kwh
+    string source
+  }
+  readings_hourly {
+    int load_id PK,FK
+    string hour_start PK
+    float avg_power_w
+    float max_power_w
+    float energy_kwh
+    int samples
+  }
+  recommendations {
+    int id PK
+    string site_id FK
+    int load_id FK
+    string type
+    string title
+    string assumption
+    float monthly_savings_kwh
+    float monthly_savings_cop
+    float score
+    float confidence
+    string status
+    string created_at
+    string decided_at
+    int decided_by FK
+    string accepted_at
+    string postponed_until
+    string reason
+    string baseline_window_start
+    string baseline_window_end
+  }
+  roles {
+    string code PK
+    string name
+    string description
+  }
+  schema_migrations {
+    int version PK
+    string name
+    string checksum
+    string applied_at
+  }
+  settings {
+    string site_id PK,FK
+    float investment_cop
+    float emission_factor_kg_per_kwh
+    string emission_factor_source
+    float alert_threshold_pct
+    int alert_window_minutes
+    int updated_by FK
+    string updated_at
+  }
+  site_schedules {
+    string site_id PK,FK
+    int weekday PK
+    int closed
+    string opens_at
+    string closes_at
+  }
+  sites {
+    string id PK
+    string name
+    string city
+    string timezone
+    string created_at
+  }
+  tariffs {
+    int id PK
+    string site_id FK
+    float cop_per_kwh
+    string effective_from
+    int created_by FK
+    string created_at
+    string note
+  }
+  telemetry {
+    int id PK
+    string site_id
+    string gateway_id
+    string received_at
+    string reading
+  }
+  user_sites {
+    int user_id PK,FK
+    string site_id PK,FK
+  }
+  users {
+    int id PK
+    string username UK
+    string salt
+    string hash
+    string role FK
+    string display_name
+    int active
+    string created_at
+    int created_by FK
+    string last_login_at
+  }
