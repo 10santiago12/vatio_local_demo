@@ -5,9 +5,10 @@ const path = require("path");
 const os = require("os");
 const { URL } = require("url");
 
-const PORT = Number(process.env.PORT || 3000);
-const HOST = process.env.HOST || "127.0.0.1";
-const DEVICE_KEY = process.env.VATIO_DEVICE_KEY || "";
+const config = require("./backend/config").getConfigOrExit();
+const PORT = config.port;
+const HOST = config.host;
+const DEVICE_KEY = config.deviceKey;
 
 const PUBLIC_DIR = path.join(__dirname, "public");
 const DATA_DIR = path.join(__dirname, "data");
@@ -251,7 +252,7 @@ const server = http.createServer(async (req, res) => {
       const result = security.login(payload.username, payload.password, req.socket.remoteAddress);
       if (!result) return sendJson(res, 401, {error:'Credenciales inválidas.'});
       if (result.limited) return sendJson(res, 429, {error:'Demasiados intentos.'});
-      res.setHeader('Set-Cookie', `vatio_session=${result.id}; HttpOnly; SameSite=Strict; Path=/; Max-Age=28800${req.socket.encrypted ? '; Secure' : ''}`);
+      res.setHeader('Set-Cookie', `vatio_session=${result.id}; HttpOnly; SameSite=Strict; Path=/; Max-Age=28800${config.secureCookie(req) ? '; Secure' : ''}`);
       return sendJson(res, 200, {username:result.username, role:result.role, csrf:result.csrf});
     } catch { return sendJson(res,400,{error:'Solicitud inválida.'}); }
   }
@@ -368,6 +369,7 @@ server.listen(PORT, HOST, () => {
     console.log(` Red local:             http://${ip}:${PORT}`);
     console.log(` ESP32 POST:            http://${ip}:${PORT}/api/telemetry`);
   }
+  console.log(` Perfil: ${config.appEnv} | Host: ${HOST}`);
   console.log(` Clave de dispositivo configurada: ${Boolean(DEVICE_KEY)}`);
   console.log("======================================================");
   console.log("");

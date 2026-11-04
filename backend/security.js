@@ -1,17 +1,19 @@
 const crypto = require('node:crypto');
+const fs = require('node:fs');
 const { DatabaseSync } = require('node:sqlite');
 const path = require('node:path');
 
-const db = new DatabaseSync(process.env.VATIO_DB || path.join(__dirname, '..', 'data', 'vatio.sqlite'));
+const config = require('./config').getConfigOrExit();
+fs.mkdirSync(path.dirname(config.dbPath), { recursive: true });
+const db = new DatabaseSync(config.dbPath);
 db.exec(`PRAGMA foreign_keys=ON; PRAGMA journal_mode=WAL;
 CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT UNIQUE NOT NULL, salt TEXT NOT NULL, hash TEXT NOT NULL, role TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS telemetry (id INTEGER PRIMARY KEY, site_id TEXT NOT NULL, gateway_id TEXT NOT NULL, received_at TEXT NOT NULL, reading TEXT NOT NULL);
 CREATE INDEX IF NOT EXISTS telemetry_site_time ON telemetry(site_id, received_at);
 CREATE TABLE IF NOT EXISTS audit (id INTEGER PRIMARY KEY, at TEXT NOT NULL, actor TEXT NOT NULL, event TEXT NOT NULL, site_id TEXT, details TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS control_requests (id INTEGER PRIMARY KEY, site_id TEXT NOT NULL, load_id TEXT NOT NULL, action TEXT NOT NULL, status TEXT NOT NULL, requested_by TEXT NOT NULL, created_at TEXT NOT NULL);`);
-const password = process.env.VATIO_ADMIN_PASSWORD;
+const password = config.adminPassword;
 if (!db.prepare('SELECT id FROM users WHERE username=?').get('admin') && password) {
-  if (password.length < 16) throw new Error('VATIO_ADMIN_PASSWORD debe tener al menos 16 caracteres');
   const salt = crypto.randomBytes(16).toString('hex');
   const hash = crypto.scryptSync(password, salt, 64).toString('hex');
   db.prepare('INSERT INTO users(username,salt,hash,role) VALUES(?,?,?,?)').run('admin', salt, hash, 'Administrador');
