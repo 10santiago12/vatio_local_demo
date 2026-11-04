@@ -146,3 +146,7 @@ Cubren autenticación, clave de dispositivo, CSRF, rechazo de carga crítica, pe
 - [`docs/der.md`](docs/der.md): modelo de datos, migraciones y diagrama entidad-relación.
 - [`docs/09-matriz-cumplimiento.md`](docs/09-matriz-cumplimiento.md): estado de cumplimiento por requisito.
 - [`.ai/HANDOFF.md`](.ai/HANDOFF.md): estado del trabajo y siguientes pasos.
+
+## Documentación
+
+- API: `docs/api.md` · Datos: `docs/der.md` · Stack y arquitectura: `docs/stack-y-arquitectura.md` · Despliegue: `docs/despliegue.md` · Cumplimiento: `docs/09-matriz-cumplimiento.md`.
