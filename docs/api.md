@@ -305,6 +305,14 @@ Doble protección: permiso `view_demo_panel` y bandera del entorno. Está habili
 ### `POST /api/reset`  · `configure`
 - Oculta las lecturas del ESP32 y vuelve a la vista del simulador. **Salida:** `{ ok, source: "simulator" }`.
 
+## Eventos y operación
+
+### `POST /api/events`  (cualquier sesión)
+- **Entrada:** `{ name, page? }`. `name` solo puede ser `page_view`, `report_view` o `help_opened`; `page` es opcional (hasta 60 caracteres: letras, números, `-_./#`).
+- **Salida:** `202 { ok: true }`. Requiere CSRF como cualquier POST autenticado.
+- **Errores:** `400 invalid_event`, `401`, `429 rate_limited` (más de 60 eventos por minuto por usuario).
+- El resto de eventos (inicio y cierre de sesión, alertas, decisiones, descargas, respaldos) los registra el servidor solo.
+
 ## Pruebas de la API
 
 Las pruebas de integración están en `tests/api/` (`rbac`, `operations`, `control`, `value`, `reports`, `data`) y levantan la aplicación completa con una base temporal sembrada, un usuario demo por perfil y un reloj simulado controlado.

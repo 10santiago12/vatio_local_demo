@@ -30,6 +30,7 @@ const { createModules } = require('./app/modules');
 const { createDemo } = require('./app/demo');
 const { createValue } = require('./app/value');
 const { createDataExchange } = require('./app/data-exchange');
+const { createUiEvents } = require('./app/ui-events');
 const { createMetrics, requestLine } = require('./ops/request-log');
 
 /** Clock port whose implementation can be swapped (system <-> simulated). */
@@ -67,6 +68,11 @@ function createRuntime({ config, db, wallNow = Date.now }) {
     if (!config.quiet) console.error(JSON.stringify({ at: new Date().toISOString(), level: 'error', source, message: error.message, request_id: requestId }));
   }
 
+  /** Records a product event (never throws, never carries secrets). */
+  function track(name, { user = null, properties } = {}) {
+    try { repos.events.track({ at: new Date(wallNow()).toISOString(), name, userId: user ? user.userId : null, siteId, properties }); } catch { /* analytics must not break a request */ }
+  }
+
   // Bootstrap administrator (password from the environment, never a default).
   if (!repos.users.getByUsername('admin') && config.adminPassword) {
     const { salt, hash } = hashPassword(config.adminPassword);
@@ -86,7 +92,7 @@ function createRuntime({ config, db, wallNow = Date.now }) {
 
   const ingestion = createIngestion({ repos, clock, options: { autoRegister: !config.isProduction } });
   const state = { scenario: loadDemoScenario({ repos, clock }), demoMode };
-  const access = createAccess({ repos, clock });
+  const access = createAccess({ repos, clock, track });
   const auth = createAuth({ repos, access, wallNow });
   const analytics = createAnalytics({ repos, clock });
   const users = createUserAdmin({ repos, access, auth });
@@ -94,12 +100,13 @@ function createRuntime({ config, db, wallNow = Date.now }) {
 
   const control = createControl({ repos, clock, access, analytics });
   const recommendations = createRecommendations({ repos, clock, analytics, access, control });
-  const alerts = createAlerts({ repos, clock, analytics, access });
+  const alerts = createAlerts({ repos, clock, analytics, access, track });
   const operations = createOperations({ repos, clock, analytics, recommendations });
   const value = createValue({ repos, clock, analytics });
   const data = createDataExchange({ repos, clock, access, analytics });
+  const uiEvents = createUiEvents({ track, wallNow });
   const app = {
-    config, db, repos, clock, siteId, wallNow, state, logError, logRequest, metrics,
+    config, db, repos, clock, siteId, wallNow, state, logError, logRequest, metrics, track, uiEvents,
     ingestion, access, auth, analytics, users, settings, control, recommendations, alerts, operations, value, data,
     scenario: () => state.scenario,
     close() { db.close(); },

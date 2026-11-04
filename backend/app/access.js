@@ -10,10 +10,24 @@
 const { authorize } = require('../domain/permissions');
 const { HttpError } = require('../http/http-error');
 
+/** Audit entries that are also product events: audit event -> tracked event name (and properties). */
+function eventOf(event, result, details) {
+  if (event === 'login') return { name: 'login_ok' };
+  if (event === 'login_failed' || event === 'logout' || event === 'alert_reviewed') return { name: event };
+  if (event.startsWith('recommendation_')) return { name: 'recommendation_decision', properties: { decision: event.slice('recommendation_'.length) } };
+  if (event.startsWith('control_') || ['critical_load_off_attempt', 'safe_state', 'closing_mode'].includes(event)) {
+    const outcome = result || (event === 'control_proposed' || event === 'control_requested' ? 'pending' : null);
+    return outcome ? { name: 'control_decision', properties: { event, outcome } } : null;
+  }
+  if (event === 'report_downloaded') return { name: event, properties: { report: details.report, format: details.format } };
+  if (event === 'data_exported') return { name: event, properties: { format: details.format, granularity: details.granularity } };
+  return null;
+}
+
 /**
  * @param {{repos: object, clock: {now: function(): number, state: function(): {mode: string}}}} deps
  */
-function createAccess({ repos, clock }) {
+function createAccess({ repos, clock, track = () => {} }) {
   const nowIso = () => new Date(clock.now()).toISOString();
 
   /**
@@ -22,6 +36,8 @@ function createAccess({ repos, clock }) {
    */
   function audit({ user = null, event, siteId = null, loadId = null, result = null, reason = null, details = {} }) {
     const at = nowIso();
+    const tracked = eventOf(event, result, details || {});
+    if (tracked) track(tracked.name, { user, properties: tracked.properties });
     return repos.audit.append({
       at, actor: user ? user.username : 'system', event, siteId, details, userId: user ? user.userId : null,
       role: user ? user.roleCode : null, loadId, result, reason, simulatedAt: clock.state().mode === 'simulated' ? at : null,

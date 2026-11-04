@@ -30,15 +30,17 @@ function present(row, loadsById, users) {
 }
 
 /** @param {{repos: object, clock: {now: function(): number}, analytics: object, access: object}} deps */
-function createAlerts({ repos, clock, analytics, access }) {
+function createAlerts({ repos, clock, analytics, access, track = () => {} }) {
   const maintenanceChecked = new Map();
 
   function persist(siteId, alert) {
     if (alert.loadId === null || repos.alerts.findActive(alert.loadId, alert.type)) return null;
-    return repos.alerts.create({
+    const created = repos.alerts.create({
       siteId, loadId: alert.loadId, type: alert.type, detectedAt: alert.detectedAt, excessPct: alert.excessPct, excessCostPerHourCop: alert.excessCostPerHourCop,
       projectedMonthlyCostCop: alert.projectedMonthlyCostCop, message: alert.message, details: alert.details,
     });
+    track('alert_created', { properties: { type: alert.type, loadId: alert.loadId } });
+    return created;
   }
 
   return {
