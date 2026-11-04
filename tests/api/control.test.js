@@ -153,7 +153,7 @@ test('safe state: a module silent for more than 5 minutes keeps its load on and 
   const reconnect = await owner.post(`/api/demo/modules/${module_.id}/reconnect`);
   assert.equal(reconnect.status, 200);
   assert.match(reconnect.body.message, /Se sincronizaron \d+ lecturas, 0 perdidas/);
-  assert.ok(reconnect.body.synced > 0);
+  assert.ok(reconnect.body.stored > 0 && reconnect.body.lost === 0);
 });
 
 test('modules: list status and last reading; a technician registers one that is active and reports within 2 simulated minutes', async () => {
