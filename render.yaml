@@ -1,0 +1,21 @@
+# Render Blueprint for Vatio. Creating the service from this file does not deploy anything by itself:
+# see docs/despliegue.md for the steps. Free plans sleep after 15 minutes without traffic and have an
+# ephemeral filesystem: the SQLite file is lost on every redeploy or restart.
+services:
+  - type: web
+    name: vatio
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
+      - key: APP_ENV
+        value: production
+      - key: VATIO_ADMIN_PASSWORD
+        sync: false
+      - key: VATIO_DEVICE_KEY
+        sync: false
