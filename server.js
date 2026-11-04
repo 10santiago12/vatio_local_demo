@@ -6,32 +6,46 @@ const os = require("os");
 const { URL } = require("url");
 
 const config = require("./backend/config").getConfigOrExit();
+const { SystemClock } = require("./backend/adapters/clock");
+const { MAIN_SITE_ID } = require("./backend/adapters/simulator/profiles");
+const { createIngestion, envelopeFromPayload, IngestionError } = require("./backend/app/ingestion");
+const { ensureMainSite } = require("./backend/app/site-setup");
+const { loadDemoScenario } = require("./backend/app/demo-data");
 const PORT = config.port;
 const HOST = config.host;
 const DEVICE_KEY = config.deviceKey;
 
 const PUBLIC_DIR = path.join(__dirname, "public");
-const DATA_DIR = path.join(__dirname, "data");
-const LOG_FILE = path.join(DATA_DIR, "telemetry.jsonl");
 const MAX_BODY_BYTES = 2 * 1024 * 1024;
-const MAX_HISTORY = 2500;
+const DEFAULT_SITE = MAIN_SITE_ID;
 
-fs.mkdirSync(DATA_DIR, { recursive: true });
 const security = require('./backend/security');
 
-const latestByModule = new Map();
-const history = [];
-let gatewayState = {
-  gateway_id: null,
-  site_id: "la-espiga-chia",
-  last_received_at: null
-};
-for (const row of security.db.prepare('SELECT site_id,gateway_id,received_at,reading FROM telemetry ORDER BY id DESC LIMIT ?').all(MAX_HISTORY).reverse()) {
-  const reading = JSON.parse(row.reading);
-  latestByModule.set(reading.module_id, reading);
-  history.push({site_id:row.site_id,gateway_id:row.gateway_id,...reading});
-  gatewayState = {site_id:row.site_id,gateway_id:row.gateway_id,last_received_at:row.received_at};
+// Ports and use cases (hexagonal layout): the clock is injected everywhere; real devices and the
+// simulator feed the same ingestion use case.
+const clock = new SystemClock();
+ensureMainSite({ repos: security.repos, clock });
+const ingestion = createIngestion({ repos: security.repos, clock, options: { autoRegister: !config.isProduction } });
+const scenario = loadDemoScenario({ repos: security.repos, clock });
+
+// Readings from a real device older than this instant are hidden after POST /api/reset.
+let ignoreDeviceBefore = "";
+let gatewayState = { gateway_id: null, site_id: DEFAULT_SITE, last_received_at: null };
+{
+  const last = security.repos.readings.latestBySite(DEFAULT_SITE, { source: "esp32" }).map((r) => r.ts).sort().pop();
+  if (last) gatewayState = { gateway_id: "ESP32", site_id: DEFAULT_SITE, last_received_at: last };
 }
+
+// Housekeeping: modules silent for more than 2 minutes become inactive; raw readings older than
+// 2 days are folded into hourly aggregates.
+function runSafely(task, name) {
+  try { task(); } catch (error) {
+    try { security.repos.errors.log({ at: new Date(clock.now()).toISOString(), source: name, message: error.message, stack: error.stack }); } catch { /* the error log itself failed */ }
+    console.error(`${name}: ${error.message}`);
+  }
+}
+setInterval(() => runSafely(() => ingestion.refreshModuleStatuses(), "module-status"), 30 * 1000).unref();
+setInterval(() => runSafely(() => ingestion.compact(), "readings-compaction"), 60 * 60 * 1000).unref();
 
 function localIPv4Addresses() {
   const nets = os.networkInterfaces();
@@ -110,120 +124,68 @@ function serveStatic(req, res, pathname) {
   });
 }
 
-function safeNumber(value, fallback = 0) {
-  const n = Number(value);
-  return Number.isFinite(n) ? n : fallback;
-}
-
-function normalizeReading(raw, receivedAt) {
-  const power = Math.max(0, safeNumber(raw.power_w));
-  const voltage = Math.max(0, safeNumber(raw.voltage_v, 120));
-  const current = Math.max(0, safeNumber(raw.current_a, voltage ? power / voltage : 0));
-
+/** Legacy API shape of a stored reading row (what the UI and the ESP32 docs describe). */
+function legacyReading(row, nowMs) {
+  const ageSec = Math.max(0, Math.round((nowMs - Date.parse(row.ts)) / 1000));
+  const status = row.module_status || "active";
   return {
-    module_id: String(raw.module_id || raw.moduleId || "UNKNOWN").slice(0, 64),
-    load_id: String(raw.load_id || raw.loadId || "unknown").slice(0, 64),
-    load_name: String(raw.load_name || raw.loadName || raw.load_id || "Carga").slice(0, 120),
-    manufacturer: String(raw.manufacturer || "ESP32 virtual").slice(0, 80),
-    voltage_v: Number(voltage.toFixed(2)),
-    current_a: Number(current.toFixed(3)),
-    power_w: Number(power.toFixed(1)),
-    energy_kwh: Number(Math.max(0, safeNumber(raw.energy_kwh)).toFixed(6)),
-    status: String(raw.status || "active").slice(0, 32),
-    timestamp: raw.timestamp ? String(raw.timestamp).slice(0, 64) : receivedAt,
-    received_at: receivedAt
+    module_id: row.module_id,
+    load_id: row.load_code,
+    load_name: row.load_name,
+    manufacturer: row.manufacturer || "ESP32 virtual",
+    voltage_v: row.voltage_v,
+    current_a: row.current_a,
+    power_w: row.power_w,
+    energy_kwh: row.energy_kwh,
+    status,
+    timestamp: row.ts,
+    received_at: row.ts,
+    age_seconds: ageSec,
+    effective_status: ageSec > 120 ? "inactive" : status
   };
 }
 
-function ingest(payload) {
-  const receivedAt = new Date().toISOString();
-  const readings = Array.isArray(payload.readings) ? payload.readings : [];
-  if (!readings.length) {
-    throw new Error("El payload debe contener readings[] con al menos una lectura.");
-  }
-  if (readings.length > 100) {
-    throw new Error("Máximo 100 lecturas por lote.");
-  }
-
-  const normalized = readings.map((reading) => normalizeReading(reading, receivedAt));
-  if (payload.site_id !== 'la-espiga-chia' || payload.gateway_id !== 'ESP32-DEMO-01') throw new Error('Gateway o sede no autorizados.');
-  if (readings.some(r => !r || typeof r.module_id !== 'string' || typeof r.load_id !== 'string' || typeof r.power_w !== 'number' || !Number.isFinite(r.power_w) || r.power_w < 0)) throw new Error('Lectura inválida.');
-  security.saveReadings(payload.site_id, payload.gateway_id, receivedAt, normalized);
-  gatewayState = {
-    gateway_id: String(payload.gateway_id || "ESP32").slice(0, 80),
-    site_id: String(payload.site_id || "la-espiga-chia").slice(0, 80),
-    last_received_at: receivedAt
-  };
-
-  for (const reading of normalized) {
-    latestByModule.set(reading.module_id, reading);
-    history.push({ gateway_id: gatewayState.gateway_id, site_id: gatewayState.site_id, ...reading });
-  }
-  if (history.length > MAX_HISTORY) {
-    history.splice(0, history.length - MAX_HISTORY);
-  }
-
-  return { receivedAt, normalized };
-}
-
-function simulatorReadings() {
-  const t = Date.now() / 1000;
-  const cycle = (period, duty = 0.5, phase = 0) => ((t + phase) % period) / period < duty;
-  const hour = new Date().getHours();
-
-  const defs = [
-    ["MX-001","freezer","Congelador vertical","EnerSense", cycle(44,0.60) ? 412 : 18],
-    ["MX-002","fridge","Nevera exhibidora","VoltioLab", cycle(37,0.55,9) ? 395 : 16],
-    ["MX-003","pos","Computador / POS","EnerSense", hour >= 6 && hour < 20 ? 121 : 8],
-    ["MX-004","oven","Horno eléctrico","VoltioLab", ((hour >= 5 && hour < 10) || (hour >= 15 && hour < 17)) && cycle(28,0.70) ? 5900 : 90],
-    ["MX-005","coffee","Cafetera industrial","EnerSense", hour >= 6 && hour < 20 ? (cycle(21,0.38) ? 1930 : 150) : 150],
-    ["MX-006","ac","Aire acondicionado","VoltioLab", hour >= 12 && hour <= 20 ? (cycle(31,0.68,5) ? 1180 : 80) : 0],
-    ["MX-007","sign","Letrero luminoso","EnerSense", hour >= 17 || hour < 2 ? 249 : 0],
-    ["MX-008","tv","Televisor","VoltioLab", hour >= 8 && hour < 19 ? 108 : 3]
-  ];
-
-  return defs.map((d, i) => {
-    const voltage = 120 + Math.sin(t / 17 + i) * 1.2;
-    const power = Math.max(0, d[4] * (0.97 + 0.03 * Math.sin(t / 11 + i * 0.6)));
+/** Live readings of the simulator (no database writes): what every simulated load draws right now. */
+function simulatorReadings(nowMs) {
+  const stored = new Map(security.repos.readings.latestBySite(DEFAULT_SITE).map((r) => [r.load_code, r]));
+  return scenario.engine.profiles().map((profile) => {
+    const sample = scenario.engine.sample(profile.code, nowMs);
+    const iso = new Date(nowMs).toISOString();
     return {
-      module_id: d[0],
-      load_id: d[1],
-      load_name: d[2],
-      manufacturer: d[3],
-      voltage_v: Number(voltage.toFixed(2)),
-      current_a: Number((voltage ? power / voltage : 0).toFixed(3)),
-      power_w: Number(power.toFixed(1)),
-      energy_kwh: Number((i * 3.7 + (t % 3600) / 3600 * power / 1000).toFixed(6)),
+      module_id: profile.moduleId,
+      load_id: profile.code,
+      load_name: profile.name,
+      manufacturer: profile.manufacturer,
+      voltage_v: sample.voltageV,
+      current_a: sample.currentA,
+      power_w: sample.powerW,
+      energy_kwh: stored.get(profile.code)?.energy_kwh ?? 0,
       status: "active",
-      timestamp: new Date().toISOString(),
-      received_at: new Date().toISOString()
+      timestamp: iso,
+      received_at: iso,
+      age_seconds: 0,
+      effective_status: "active"
     };
   });
+}
+
+function deviceRows() {
+  return security.repos.readings.latestBySite(DEFAULT_SITE, { source: "esp32", since: ignoreDeviceBefore });
 }
 
 function latestPayload() {
-  const now = Date.now();
-  const hasReal = latestByModule.size > 0;
-  const readings = hasReal ? [...latestByModule.values()] : simulatorReadings();
-
-  const withFreshness = readings.map((reading) => {
-    const ageSec = Math.max(0, Math.round((now - new Date(reading.received_at || reading.timestamp).getTime()) / 1000));
-    return {
-      ...reading,
-      age_seconds: ageSec,
-      effective_status: ageSec > 120 ? "inactive" : reading.status
-    };
-  });
-
+  const nowMs = clock.now();
+  const rows = deviceRows();
+  const hasReal = rows.length > 0;
   return {
     source: hasReal ? "esp32" : "simulator",
     gateway: hasReal ? gatewayState : {
       gateway_id: "SIMULATOR",
-      site_id: "la-espiga-chia",
-      last_received_at: new Date().toISOString()
+      site_id: DEFAULT_SITE,
+      last_received_at: new Date(nowMs).toISOString()
     },
-    server_time: new Date().toISOString(),
-    readings: withFreshness
+    server_time: new Date(nowMs).toISOString(),
+    readings: hasReal ? rows.map((row) => legacyReading(row, nowMs)) : simulatorReadings(nowMs)
   };
 }
 
@@ -292,10 +254,10 @@ const server = http.createServer(async (req, res) => {
     sendJson(res, 200, {
       ok: true,
       service: "Vatio Local",
-      source: latestByModule.size ? "esp32" : "simulator",
+      source: deviceRows().length ? "esp32" : "simulator",
       local_ips: localIPv4Addresses(),
       port: PORT,
-      server_time: new Date().toISOString()
+      server_time: new Date(clock.now()).toISOString()
     });
     return;
   }
@@ -319,10 +281,11 @@ const server = http.createServer(async (req, res) => {
 
   if (pathname === "/api/telemetry/history" && req.method === "GET") {
     const limit = Math.max(1, Math.min(1000, Number(url.searchParams.get("limit") || 250)));
-    sendJson(res, 200, {
-      count: Math.min(limit, history.length),
-      readings: history.slice(-limit)
-    });
+    const nowMs = clock.now();
+    const readings = security.repos.readings.recentBySite(DEFAULT_SITE, { source: "esp32", since: ignoreDeviceBefore, limit })
+      .reverse()
+      .map((row) => ({ site_id: DEFAULT_SITE, gateway_id: gatewayState.gateway_id, ...legacyReading(row, nowMs) }));
+    sendJson(res, 200, { count: readings.length, readings });
     return;
   }
 
@@ -335,22 +298,35 @@ const server = http.createServer(async (req, res) => {
     try {
       const rawBody = await readBody(req);
       const payload = JSON.parse(rawBody || "{}");
-      const result = ingest(payload);
+      const result = ingestion.ingest(envelopeFromPayload(payload));
+      if (result.accepted + result.duplicates === 0) {
+        sendJson(res, 400, { ok: false, error: result.rejected[0]?.message || "Lectura inválida.", rejected: result.rejected });
+        return;
+      }
+      if (result.accepted > 0) gatewayState = { gateway_id: String(payload.gateway_id || "ESP32").slice(0, 80), site_id: payload.site_id, last_received_at: result.receivedAt };
       sendJson(res, 200, {
         ok: true,
-        received: result.normalized.length,
+        received: result.received,
+        accepted: result.accepted,
+        duplicates: result.duplicates,
+        rejected: result.rejected,
+        sync: result.sync,
         received_at: result.receivedAt
       });
     } catch (error) {
-      sendJson(res, 400, { ok: false, error: error.message });
+      if (error instanceof IngestionError || error instanceof SyntaxError) {
+        sendJson(res, 400, { ok: false, error: error instanceof SyntaxError ? "JSON inválido." : error.message });
+      } else {
+        security.repos.errors.log({ at: new Date(clock.now()).toISOString(), source: "telemetry", message: error.message, stack: error.stack });
+        sendJson(res, 500, { ok: false, error: "Error interno al guardar las lecturas." });
+      }
     }
     return;
   }
 
   if (pathname === "/api/reset" && req.method === "POST") {
-    latestByModule.clear();
-    history.splice(0, history.length);
-    gatewayState = { gateway_id: null, site_id: "la-espiga-chia", last_received_at: null };
+    ignoreDeviceBefore = new Date(clock.now()).toISOString();
+    gatewayState = { gateway_id: null, site_id: DEFAULT_SITE, last_received_at: null };
     sendJson(res, 200, { ok: true, source: "simulator" });
     return;
   }

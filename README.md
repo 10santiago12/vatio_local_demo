@@ -31,6 +31,7 @@ La contraseña inicial solo se usa al crear el usuario: cambiar la variable desp
 | `VATIO_DEVICE_KEY` | Opcional; sin ella se rechaza toda ingestión | Obligatoria, mínimo 16 caracteres, distinta de la contraseña |
 | `VATIO_DB` | Opcional (`data/vatio.sqlite`) | Ruta persistente, por ejemplo `/var/lib/vatio/vatio.sqlite` |
 | `VATIO_ENV_FILE` | Opcional: ruta alterna del archivo `.env` | Igual |
+| `VATIO_ALLOW_DEMO_SEED` | No necesaria | Debe ser `yes` para que `npm run seed:demo` se ejecute; nunca se carga sola |
 
 Reglas de producción: las cookies de sesión siempre llevan `Secure` (sirva la aplicación detrás de HTTPS); si falta un secreto o es inseguro, el servidor no inicia y lista cada problema. En local la cookie también es `Secure` cuando el proxy envía `X-Forwarded-Proto: https`.
 
@@ -40,6 +41,7 @@ Reglas de producción: las cookies de sesión siempre llevan `Secure` (sirva la 
 |---|---|
 | `npm start` | Inicia el servidor |
 | `npm run check` | Revisa la sintaxis de todos los archivos JavaScript del repositorio |
+| `npm run seed:demo` | Carga los datos de demostración (3 sedes, 11 cargas, 45 días de historial simulado); es idempotente y en producción exige `VATIO_ALLOW_DEMO_SEED=yes` |
 | `npm run der` | Regenera el diagrama entidad-relación en `docs/der.*` a partir del esquema |
 | `npm test` | Ejecuta las pruebas con `node --test` (funciona en Windows) |
 
@@ -79,11 +81,11 @@ Las rutas `/api/*` exigen sesión (cookie `vatio_session`), salvo las indicadas.
 | `POST /api/auth/login` | Ninguna (10 intentos por minuto por IP) | Inicia sesión; devuelve `username`, `role`, `csrf` y la cookie |
 | `GET /api/auth/me` | Sesión | Usuario de la sesión actual |
 | `GET /api/info` | Sesión | URLs de red local para configurar el ESP32 |
-| `GET /api/telemetry/latest` | Sesión | Últimas lecturas por módulo (simuladas si no hay ESP32) |
-| `GET /api/telemetry/history?limit=250` | Sesión | Histórico reciente en memoria (máximo 1000) |
-| `POST /api/telemetry` | Cabecera `X-Device-Key` | Ingestión desde el ESP32; hasta 100 lecturas por lote |
+| `GET /api/telemetry/latest` | Sesión | Últimas lecturas por módulo (las del simulador si ningún ESP32 ha reportado) |
+| `GET /api/telemetry/history?limit=250` | Sesión | Últimas lecturas guardadas del ESP32 (máximo 1000) |
+| `POST /api/telemetry` | Cabecera `X-Device-Key` | Ingestión: ESP32 o fabricantes simulados; hasta 100 lecturas por lote (1000 en una sincronización de búfer) |
 | `POST /api/control/requests` | Sesión + CSRF | Registra una solicitud de apagado pendiente; rechaza y audita cargas críticas y pérdida de comunicación |
-| `POST /api/reset` | Sesión + CSRF | Borra las lecturas en memoria y vuelve al simulador |
+| `POST /api/reset` | Sesión + CSRF | Oculta las lecturas del ESP32 y vuelve a la vista del simulador (no borra datos guardados) |
 
 Payload de `POST /api/telemetry`:
 
@@ -99,7 +101,26 @@ Payload de `POST /api/telemetry`:
 }
 ```
 
-Si un módulo no reporta en más de 120 s se muestra como `inactive`.
+Cada lectura se valida (números finitos, rangos, fecha dentro de los últimos 60 días y no futura), se normaliza y se guarda en `readings`; reenviar el mismo lote no duplica datos (se identifica por carga y marca de tiempo). Si falta `timestamp` o viene vacío, se usa la hora de recepción. Las lecturas inválidas se informan una a una en `rejected` y las válidas del mismo lote se guardan; si ninguna es válida la respuesta es `400`. En el perfil local un módulo desconocido se registra solo (con su carga, modo de solo monitoreo y criticidad esencial); en producción debe estar registrado. Si un módulo no reporta en más de 2 minutos pasa a `inactive`.
+
+### Fabricantes simulados y búfer sin conexión
+
+La ingestión normaliza dos formatos de fabricante al mismo modelo de lectura (RNF-03). Se indican con `"format"` o se detectan por su forma:
+
+```json
+{ "site_id": "la-espiga-chia", "format": "enersense",
+  "readings": [ { "dev": "MX-001", "t": 1773261000, "v": 120.4, "i": 2.9, "p": 350.1, "e": 12.345, "st": "OK", "load": "freezer" } ] }
+
+{ "site_id": "la-espiga-chia", "format": "voltiolab",
+  "readings": [ { "meter": { "id": "MX-002", "state": "ONLINE" }, "sampled_at": "2026-03-11T20:30:00Z", "channel": "fridge",
+                  "metrics": { "volts": 120.2, "milliamps": 3300, "watts": 395, "wh_total": 12345 } } ] }
+```
+
+Un módulo desconectado guarda sus lecturas y al reconectarse las envía con `"buffered": true` y `"expected": N`; la respuesta trae `sync.message`, por ejemplo "Se sincronizaron 600 lecturas, 0 perdidas".
+
+## Datos de demostración y simulador
+
+`npm run seed:demo` crea las sedes "Panadería La Espiga – Chía" (principal), "La Espiga – Cajicá" y "La Espiga – Zipaquirá", 11 cargas con su módulo (la Batidora nueva solo tiene 3 días de datos), la tarifa de 950 COP/kWh marcada como ejemplo, la inversión de 1.800.000 COP, el factor de emisión 0,126 kgCO2e/kWh con su fuente y 45 días de historial (lecturas de 1 minuto solo en los últimos 2 días; agregados por hora antes). Con la misma semilla y el mismo instante los datos son idénticos. No crea usuarios. La arquitectura del simulador está en `backend/adapters/` (reloj, simulador, fabricantes) y los casos de uso en `backend/app/`.
 
 ## Pruebas
 
@@ -108,14 +129,14 @@ npm run check
 npm test
 ```
 
-Cubren autenticación, clave de dispositivo, CSRF, rechazo de carga crítica, persistencia de telemetría tras reiniciar, configuración por perfiles (`.env`, producción segura, cookies) y la guarda de versión de Node. No constituyen todavía una validación completa de roles, interfaz, concurrencia o seguridad.
+Cubren autenticación, clave de dispositivo, CSRF, rechazo de carga crítica, persistencia de telemetría tras reiniciar, configuración por perfiles (`.env`, producción segura, cookies), la guarda de versión de Node, el dominio, los relojes, el simulador y su historial, la normalización de fabricantes, la ingestión (validación, idempotencia, búfer sin conexión), la migración de la telemetría heredada y el script de datos de demostración. No constituyen todavía una validación completa de roles, interfaz, concurrencia o seguridad.
 
 ## Limitaciones actuales
 
 - Solo existe el usuario administrador y una sede; los demás roles y la multisede están pendientes.
 - Las solicitudes de control quedan pendientes: no hay aprobación, ejecución simulada ni modo cierre implementados.
 - Varias vistas de la interfaz muestran ejemplos identificados como tales, no datos persistidos.
-- El esquema completo y las migraciones ya existen, pero la mayoría de las entidades (cargas, alertas, recomendaciones, acciones) todavía no se usan desde la API ni la interfaz.
+- Las lecturas, módulos y cargas ya se guardan en el esquema completo (simulador y ESP32); las alertas, recomendaciones y acciones de control todavía no se usan desde la API ni la interfaz.
 - No se controla hardware físico; el firmware usa HTTP sin cifrar. No exponga el servidor a redes no confiables sin un proxy HTTPS.
 - No hay pruebas E2E ni de carga todavía.
 

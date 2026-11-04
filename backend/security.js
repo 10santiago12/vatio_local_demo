@@ -40,10 +40,4 @@ function session(req) {
   if (!s || s.expires<Date.now()) { if(id) sessions.delete(id); return null; }
   return s;
 }
-function saveReadings(site,gateway,time,readings) {
-  const stmt=db.prepare('INSERT INTO telemetry(site_id,gateway_id,received_at,reading) VALUES(?,?,?,?)');
-  db.exec('BEGIN');
-  try { for(const r of readings) stmt.run(site,gateway,time,JSON.stringify(r)); db.exec('COMMIT'); }
-  catch(e) { db.exec('ROLLBACK'); throw e; }
-}
-module.exports={db,repos,login,session,audit,saveReadings};
+module.exports={db,repos,login,session,audit};
