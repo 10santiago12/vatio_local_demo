@@ -18,10 +18,10 @@ const HISTORY_DAYS = 45;
 const floorTo = (ms, unit) => Math.floor(ms / unit) * unit;
 
 /**
- * @param {{engine: object, loads: Array<{code: string, startMs: number}>, endMs: number, rawFromMs: number,
+ * @param {{engine: object, loads: Array<{code: string, startMs: number, energyKwh?: number}>, endMs: number, rawFromMs: number,
  *   stepMinutes?: number,
  *   sink: {raw?: function(string, object): void, hourly?: function(string, object): void}}} input
- *   `rawFromMs` must fall on an hour boundary. With `stepMinutes` > 1 (aggregated history of extra sites)
+ *   `rawFromMs` must fall on an hour boundary. `energyKwh` is the counter the load starts from (default 0). With `stepMinutes` > 1 (aggregated history of extra sites)
  *   the energy of each sample covers the whole step.
  * @returns {{raw: number, hourly: number}} Rows emitted.
  */
@@ -35,7 +35,7 @@ function generateHistory(input) {
   const counts = { raw: 0, hourly: 0 };
 
   for (const load of loads) {
-    let cumulativeKwh = 0;
+    let cumulativeKwh = load.energyKwh ?? 0;
     let bucket = null;
     const flush = () => {
       if (!bucket) return;

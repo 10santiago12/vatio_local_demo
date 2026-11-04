@@ -30,20 +30,19 @@ const FORMAT_BY_MANUFACTURER = Object.freeze({ EnerSense: 'enersense', VoltioLab
 function createModuleFleet(input) {
   const { engine, clock, siteId } = input;
   const capacity = input.bufferCapacity ?? DEFAULT_BUFFER_CAPACITY;
-  const startMinute = Math.floor(clock.now() / MS_PER_MINUTE) * MS_PER_MINUTE;
   const state = new Map();
-  for (const m of input.modules) {
+
+  function add(m) {
     state.set(m.moduleId, {
       ...m,
       format: m.format || FORMAT_BY_MANUFACTURER[m.manufacturer] || 'esp32',
       connected: true,
-      lastMinute: startMinute - MS_PER_MINUTE,
-      energyKwh: input.initialEnergyKwh?.[m.loadCode] ?? 0,
+      lastMinute: Math.floor(clock.now() / MS_PER_MINUTE) * MS_PER_MINUTE - MS_PER_MINUTE,
+      energyKwh: input.initialEnergyKwh?.[m.loadCode] ?? m.energyKwh ?? 0,
       buffer: [],
       overflowed: 0,
     });
   }
-
   const module_ = (moduleId) => {
     const m = state.get(moduleId);
     if (!m) throw new RangeError(`Unknown simulated module: ${moduleId}`);
@@ -62,8 +61,14 @@ function createModuleFleet(input) {
   const encode = (m, readings) => readings.map((r) => adapterFor(m.format).encode(r));
   const chunks = (list, size) => Array.from({ length: Math.ceil(list.length / size) }, (_, i) => list.slice(i * size, (i + 1) * size));
 
+  for (const m of input.modules) add(m);
+
   return {
     siteId,
+    /** Adds a module to the fleet (e.g. the demo's generated loads). */
+    addModule: add,
+    /** Aligns the module's kWh counter with the stored history (after the history of its load was regenerated). */
+    setEnergyKwh: (moduleId, kwh) => { module_(moduleId).energyKwh = kwh; },
     moduleIds: () => [...state.keys()],
     isConnected: (moduleId) => module_(moduleId).connected,
     bufferedCount: (moduleId) => module_(moduleId).buffer.length,
