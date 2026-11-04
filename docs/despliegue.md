@@ -39,7 +39,7 @@ Con `autoDeploy: true`, cada `push` a la rama configurada redespliega. Para volv
 ## 6. Limitaciones del plan gratuito
 - El servicio se duerme tras 15 minutos sin tráfico y tarda cerca de un minuto en despertar: ábralo antes de presentar.
 - El sistema de archivos es efímero: la base SQLite se pierde en cada redespliegue o reinicio. Para conservar datos hace falta un disco persistente (plan de pago) o exportar los datos antes de redesplegar (endpoint de exportación en `docs/api.md`).
-- Registros y métricas: use el panel **Logs** y **Metrics** de Render.
+- Registros y métricas: use el panel **Logs** y **Metrics** de Render, y `docs/operaciones.md` (eventos, errores, métricas propias y respaldos). Descargue un respaldo con `GET /api/ops/backups/<nombre>/download` antes de cada redespliegue.
 
 ## 7. Dominio propio (PENDIENTE)
 1. Compre un dominio en el registrador que prefiera.

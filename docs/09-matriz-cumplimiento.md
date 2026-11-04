@@ -21,6 +21,8 @@ Estado: **Listo** = implementado y probado. **API lista** = implementado y proba
 | Pruebas | 288 pruebas (`npm test`) | Listo: unitarias del dominio, API e integración. Pruebas E2E, de navegador y de carga: pendientes (equipo de calidad) |
 | Documentación | `README.md`, `docs/api.md`, `docs/der.md`, `docs/stack-y-arquitectura.md`, `docs/despliegue.md` | Listo |
 | Integración externa (webhook, correo) | — | Pendiente |
-| Registro de eventos, métricas y respaldo automático | — | Pendiente |
+| Registro de eventos y errores | `backend/ops/request-log.js`, tablas `events` y `error_log`, `docs/operaciones.md` | Listo: logs JSON con `X-Request-Id`, eventos de uso y errores consultables por el dueño |
+| Métricas | `GET /api/ops/metrics` | Listo: solicitudes por clase, latencia p50/p95, tamaño de la base, sesiones, último respaldo (en memoria, por proceso) |
+| Respaldo y recuperación | `backend/ops/backup.js`, `scripts/backup.js`, `scripts/restore.js` | Listo y probado (respaldar, dañar, restaurar). En Render gratis el disco es efímero: descargar copias fuera del servidor o usar disco persistente |
 | TLS (RNF-09) y cifrado en reposo | — | TLS depende del hosting (HTTPS); cifrado en reposo no implementado |
 | Despliegue | `render.yaml`, `docs/despliegue.md` | Pendiente de ejecutar (cuenta y dominio del usuario) |

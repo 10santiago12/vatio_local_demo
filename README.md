@@ -30,6 +30,9 @@ La contraseña inicial solo se usa al crear el usuario: cambiar la variable desp
 | `VATIO_ADMIN_PASSWORD` | Opcional; si se define, mínimo 16 caracteres | Obligatoria, mínimo 16 caracteres, no puede ser un valor conocido |
 | `VATIO_DEVICE_KEY` | Opcional; sin ella se rechaza toda ingestión | Obligatoria, mínimo 16 caracteres, distinta de la contraseña |
 | `VATIO_DB` | Opcional (`data/vatio.sqlite`) | Ruta persistente, por ejemplo `/var/lib/vatio/vatio.sqlite` |
+| `VATIO_BACKUP_DIR` | Opcional (`data/backups`) | Carpeta de respaldos; con disco persistente, una ruta dentro de él |
+| `VATIO_BACKUP_KEEP` | Opcional (`7`) | Cuántos respaldos conservar |
+| `VATIO_BACKUP_INTERVAL_HOURS` | Opcional (`0`: sin respaldo programado) | Por defecto `6`; `0` lo apaga |
 | `VATIO_ENV_FILE` | Opcional: ruta alterna del archivo `.env` | Igual |
 | `VATIO_ALLOW_DEMO_SEED` | No necesaria | Debe ser `yes` para que `npm run seed:demo` se ejecute; nunca se carga sola |
 
@@ -42,6 +45,8 @@ Reglas de producción: las cookies de sesión siempre llevan `Secure` (sirva la 
 | `npm start` | Inicia el servidor |
 | `npm run check` | Revisa la sintaxis de todos los archivos JavaScript del repositorio |
 | `npm run seed:demo` | Carga los datos de demostración (3 sedes, 11 cargas, 45 días de historial simulado); es idempotente y en producción exige `VATIO_ALLOW_DEMO_SEED=yes` |
+| `npm run backup` | Crea un respaldo consistente de la base ahora (ver `docs/operaciones.md`) |
+| `node scripts/restore.js <archivo> [--force]` | Restaura un respaldo verificado; la base anterior queda como `.before-restore` |
 | `npm run der` | Regenera el diagrama entidad-relación en `docs/der.*` a partir del esquema |
 | `npm test` | Ejecuta las pruebas con `node --test` (funciona en Windows) |
 
