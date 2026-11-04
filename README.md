@@ -18,7 +18,7 @@ Vatio mide el consumo por equipo, lo traduce a pesos (COP), detecta anomalías y
    - Terminal: `npm start`.
 3. Abra http://127.0.0.1:3000 e ingrese como `admin` con la contraseña de `VATIO_ADMIN_PASSWORD`.
 
-La contraseña inicial solo se usa al crear el usuario: cambiar la variable después no cambia una contraseña existente. La base SQLite se crea en `data/vatio.sqlite` (ignorada por Git); no la borre si desea conservar datos.
+La contraseña inicial solo se usa al crear el usuario: cambiar la variable después no cambia una contraseña existente. La base SQLite se crea y se migra automáticamente al iniciar en `data/vatio.sqlite` (ignorada por Git); no la borre si desea conservar datos.
 
 ## Variables de entorno
 
@@ -40,6 +40,7 @@ Reglas de producción: las cookies de sesión siempre llevan `Secure` (sirva la 
 |---|---|
 | `npm start` | Inicia el servidor |
 | `npm run check` | Revisa la sintaxis de todos los archivos JavaScript del repositorio |
+| `npm run der` | Regenera el diagrama entidad-relación en `docs/der.*` a partir del esquema |
 | `npm test` | Ejecuta las pruebas con `node --test` (funciona en Windows) |
 
 ## Configurar el ESP32
@@ -114,12 +115,13 @@ Cubren autenticación, clave de dispositivo, CSRF, rechazo de carga crítica, pe
 - Solo existe el usuario administrador y una sede; los demás roles y la multisede están pendientes.
 - Las solicitudes de control quedan pendientes: no hay aprobación, ejecución simulada ni modo cierre implementados.
 - Varias vistas de la interfaz muestran ejemplos identificados como tales, no datos persistidos.
-- No hay migraciones versionadas todavía (el esquema se crea al iniciar).
+- El esquema completo y las migraciones ya existen, pero la mayoría de las entidades (cargas, alertas, recomendaciones, acciones) todavía no se usan desde la API ni la interfaz.
 - No se controla hardware físico; el firmware usa HTTP sin cifrar. No exponga el servidor a redes no confiables sin un proxy HTTPS.
 - No hay pruebas E2E ni de carga todavía.
 
 ## Documentación
 
 - [`docs/00-gap-analysis.md`](docs/00-gap-analysis.md): auditoría inicial.
+- [`docs/der.md`](docs/der.md): modelo de datos, migraciones y diagrama entidad-relación.
 - [`docs/09-matriz-cumplimiento.md`](docs/09-matriz-cumplimiento.md): estado de cumplimiento por requisito.
 - [`.ai/HANDOFF.md`](.ai/HANDOFF.md): estado del trabajo y siguientes pasos.

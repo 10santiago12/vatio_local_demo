@@ -11,6 +11,6 @@
 | Inicio, operaciones y módulos | `public/app.js` | No hay E2E | Parcial: lecturas actuales y ejemplo |
 | Alertas, recomendaciones y cierre | `public/app.js` | No hay E2E | Pendiente: los ejemplos no son flujos persistentes |
 | Ahorro, reportes, datos crudos y multisede | `public/app.js` | No hay E2E | Pendiente: métricas y comparaciones incluyen ejemplos |
-| Modelo de datos y DER | `backend/security.js` | Inspección de esquema | Parcial: faltan entidades y DER |
+| Modelo de datos y DER | `backend/db/migrations/`, `backend/db/repositories/`, `docs/der.md` | `npm test`: migraciones, restricciones y repositorios | Parcial: esquema, migraciones y DER completos; falta usar las entidades desde la API |
 | Interfaz, carga y seguridad integral | `tests/security.test.js` | `npm test` | Parcial: sin pruebas E2E ni carga |
 | Documentación restante | `README.md` | Inspección | Pendiente: documentos 01 a 08 y migraciones |
