@@ -127,7 +127,26 @@ function createMeasurementRepositories(db) {
           return hours.length;
         });
       },
-      hourlyRange: (loadId, from, to) => q.hourlyRange.all(loadId, from, to)
+      hourlyRange: (loadId, from, to) => q.hourlyRange.all(loadId, from, to),
+      /**
+       * Raw readings for the data export, with the load code and site. Every filter is optional; `from` is
+       * inclusive and `to` exclusive (ISO instants). Ordered by site, load and time.
+       */
+      exportRaw({ siteId = null, loadCode = null, from = '', to = '9999', limit = 100000 } = {}) {
+        return db.prepare(`SELECT l.site_id AS site_id, l.code AS load_code, r.ts AS ts, r.power_w AS power_w, r.voltage_v AS voltage_v,
+            r.current_a AS current_a, r.energy_kwh AS energy_kwh, r.module_id AS module_id, r.source AS source
+          FROM readings r JOIN loads l ON l.id = r.load_id
+          WHERE (? IS NULL OR l.site_id = ?) AND (? IS NULL OR l.code = ?) AND r.ts >= ? AND r.ts < ?
+          ORDER BY l.site_id, l.code, r.ts LIMIT ?`).all(siteId, siteId, loadCode, loadCode, from, to, limit);
+      },
+      /** Hourly aggregates for the data export (same filters as exportRaw). */
+      exportHourly({ siteId = null, loadCode = null, from = '', to = '9999', limit = 100000 } = {}) {
+        return db.prepare(`SELECT l.site_id AS site_id, l.code AS load_code, h.hour_start AS hour_start, h.avg_power_w AS avg_power_w,
+            h.max_power_w AS max_power_w, h.energy_kwh AS energy_kwh, h.samples AS samples
+          FROM readings_hourly h JOIN loads l ON l.id = h.load_id
+          WHERE (? IS NULL OR l.site_id = ?) AND (? IS NULL OR l.code = ?) AND h.hour_start >= ? AND h.hour_start < ?
+          ORDER BY l.site_id, l.code, h.hour_start LIMIT ?`).all(siteId, siteId, loadCode, loadCode, from, to, limit);
+      }
     },
     baselines: {
       /** Replaces/inserts a set of hourly baseline rows for one load and window. */

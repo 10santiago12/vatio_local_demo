@@ -41,6 +41,17 @@ function register(router, app) {
     return format === 'pdf' ? file(impactPdf(report), 'application/pdf', name) : file(JSON.stringify(report, null, 2), 'application/json; charset=utf-8', name);
   }, { permission: 'download_impact_report', doc: 'Descarga el reporte ODS 7 en PDF o JSON. Parámetros: from, to, format (pdf, json).' });
 
+  router.get('/api/data/readings', ({ query }) => json(200, app.data.view(query)), {
+    permission: 'view_raw_data', doc: 'Vista de datos crudos (JSON). Filtros: site, load, from, to (AAAA-MM-DD o instante ISO), granularity (raw, hourly), limit (hasta 5000).',
+  });
+  router.get('/api/data/export', ({ query, user }) => {
+    const out = app.data.export(query, user);
+    return file(out.body, out.contentType, out.name);
+  }, { permission: 'export_raw_data', doc: 'Exporta los datos crudos en CSV o JSON. Filtros: site, load, from, to, granularity (raw, hourly), format (csv, json), limit.' });
+  router.post('/api/data/import', async (ctx) => json(200, app.data.import(await ctx.body(), ctx.user)), {
+    permission: 'import_raw_data', doc: 'Reimporta lecturas crudas (format csv o json, content o rows) y verifica cada fila contra la base de datos: informa cuántas se conservaron (100 % esperado).',
+  });
+
   router.get('/api/multisite', ({ query }) => json(200, value.multisite(siteId, query)), {
     permission: 'view_multisite', doc: 'Comparativo de sedes normalizado por día de operación, con la mayor reducción resaltada. Filtro: days (7 a 45).',
   });
