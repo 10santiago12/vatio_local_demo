@@ -17,6 +17,10 @@ function runSafely(task, name) {
 setInterval(() => runSafely(() => app.demo.runJobs(), 'jobs'), app.state.demoMode ? 1000 : 30 * 1000).unref();
 setInterval(() => runSafely(() => app.ingestion.compact(), 'readings-compaction'), 60 * 60 * 1000).unref();
 
+// Anything that escapes a handler is recorded in error_log before the process decides what to do.
+process.on('unhandledRejection', (reason) => app.logError('unhandledRejection', reason instanceof Error ? reason : new Error(String(reason))));
+process.on('uncaughtException', (error) => { app.logError('uncaughtException', error); process.exit(1); });
+
 server.listen(config.port, config.host, () => {
   const ips = localIPv4Addresses();
   console.log('');
