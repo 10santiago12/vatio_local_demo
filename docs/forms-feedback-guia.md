@@ -1,6 +1,6 @@
 # Configuración del formulario de sugerencias y PQR
 
-**Estado** [POR CONFIRMAR: URL del Forms]. La aplicación puede abrir el enlace, pero el formulario real y el correo PQR siguen pendientes. Configure el formulario en la cuenta institucional que custodie las respuestas después de confirmar al responsable del tratamiento, el texto del aviso y el acceso a la hoja.
+**Estado** [Forms publicado como borrador]. El formulario ya fue creado en la cuenta de Google seleccionada y está publicado como borrador. El responsable, la política, el correo PQR y la custodia institucional están pendientes de confirmación. La siguiente guía permite revisar y completar su configuración.
 
 ## Crear y publicar el formulario
 
@@ -26,3 +26,7 @@ Documentación del proveedor: [publicación en Google Forms](https://support.goo
 | 6 | Descripción detallada | Párrafo obligatorio. Indique qué pasó, cuándo y cómo reproducirlo, o describa la consulta o el reclamo. |
 | 7 | Evidencia o soporte | Enlace opcional a una captura o un archivo. |
 | 8 | Autorización de tratamiento | Casilla obligatoria sin premarcar. «Autorizo el tratamiento de los datos enviados para atender mi solicitud, según la Política de Tratamiento [POR CONFIRMAR: URL pública de la política]». |
+
+## Actualización del 10 de noviembre
+
+El formulario de borrador se publicó en Google Forms. El enlace público de respuesta es https://docs.google.com/forms/d/e/1FAIpQLSdE0YHreDJoHdrcJX-PrvWy9xi7G6BLfXf5Io0jRO9HgJXF8A/viewform?usp=publish-editor. La hoja de respuestas se vinculó y se activaron notificaciones a la cuenta creadora. La identidad del responsable, la política y el correo PQR están [POR CONFIRMAR]. La rama publicada requiere revisión y despliegue antes de usar este enlace en el servicio remoto.

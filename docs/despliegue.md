@@ -32,7 +32,7 @@ En producción el servidor se niega a arrancar con valores débiles o iguales.
 ## 4. Sugerencias y PQR
 
 - `VATIO_FEEDBACK_URL` recibe el enlace público de **respuesta** del Forms, con HTTPS, sin datos personales ni permisos de edición. `VATIO_PQR_EMAIL` recibe una sola dirección de contacto. En local van en `.env`. En Render van en **Environment**, y el Blueprint las declara con `sync: false`.
-- Valores reales [POR CONFIRMAR]. Siga la [guía del formulario](forms-feedback-guia.md) y verifique el enlace en una ventana privada sin iniciar sesión. Con la URL vacía, la interfaz muestra «Canal no configurado» y el arranque registra `feedback_unconfigured`.
+- Correo PQR [POR CONFIRMAR]. Siga la [guía del formulario](forms-feedback-guia.md) y verifique el enlace en una ventana privada sin iniciar sesión. Con la URL vacía, la interfaz muestra «Canal no configurado» y el arranque registra `feedback_unconfigured`.
 - El primer ingreso requiere las dos aceptaciones de los documentos vigentes. Antes de recopilar datos personales, confirme la identidad del responsable, el aviso, el destino de las respuestas y la conservación de las pruebas de autorización. La base SQLite del plan gratuito se pierde al reiniciar o redesplegar. El despliegue que deba conservar autorizaciones requiere almacenamiento persistente y una política de respaldo.
 - El 10 de noviembre de 2026, `GET /api/health` en el servicio existente respondió HTTP 200 con TLS 1.2. La verificación no cubre el enlace del firmware ESP32, que usa HTTP, ni acredita que esta rama esté desplegada.
 
@@ -53,3 +53,7 @@ Con `autoDeploy: true`, cada `push` a la rama configurada redespliega. Para volv
 1. Compre un dominio en el registrador que prefiera.
 2. En Render, **Settings → Custom Domains → Add**, y cree en el DNS el registro que Render indica (CNAME para subdominios).
 3. Espere la verificación; el certificado HTTPS lo emite Render.
+
+## Actualización del 10 de noviembre
+
+El formulario de borrador se publicó en Google Forms. El enlace público de respuesta es https://docs.google.com/forms/d/e/1FAIpQLSdE0YHreDJoHdrcJX-PrvWy9xi7G6BLfXf5Io0jRO9HgJXF8A/viewform?usp=publish-editor. La hoja de respuestas se vinculó y se activaron notificaciones a la cuenta creadora. La identidad del responsable, la política y el correo PQR están [POR CONFIRMAR]. La rama publicada requiere revisión y despliegue antes de usar este enlace en el servicio remoto.

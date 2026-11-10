@@ -21,9 +21,13 @@ Actualización del 10 de noviembre de 2026. «API lista» indica que la función
 | Pruebas | [Informe QA](qa-informe.md), [carga](qa-carga.md) | 307 pruebas Node y 53 E2E aprobadas. Carga RNF-01 y RNF-02 aprobada en local. Pruebas de usabilidad y de los cambios en dispositivos físicos pendientes. |
 | Consentimiento | `backend/app/consent.js:8`, `backend/db/migrations/010_consents.sql:2`, `tests/api/privacy.test.js:6` | Listo en prototipo. Dos aceptaciones al activar, prueba por versiones. |
 | Derechos y páginas públicas | `backend/http/privacy.js:12`, [Habeas Data](habeas-data.md) | Parcial. Consulta propia auditada y documentos públicos. Rectificación y supresión manuales cuando se habilite el canal. |
-| Sugerencias y PQR | `public/app.js:309`, `render.yaml`, [guía](forms-feedback-guia.md) | Parcial. Enlace y estado sin configuración probados. URL real y correo por confirmar. |
+| Sugerencias y PQR | `public/app.js:309`, `render.yaml`, [guía](forms-feedback-guia.md) | Parcial. Enlace y estado sin configuración probados. Enlace de borrador publicado y correo por confirmar. |
 | Integración externa (webhook o notificación) | [Habeas Data](habeas-data.md) | Pendiente. El enlace de Forms no integra almacenamiento ni seguimiento en Vatio. |
 | Registro, incidentes y métricas | `backend/runtime.js`, `backend/ops/request-log.js`, `docs/operaciones.md` | Parcial. Auditoría, eventos, errores y métricas disponibles. Gestión formal de incidentes y notificaciones pendiente. |
 | Respaldo y retención | `backend/ops/backup.js:53`, `backend/app/ingestion.js:208` | Parcial. Copias rotadas y agregación de telemetría. Sin ciclo de vida aprobado para datos personales. |
 | TLS y cifrado en reposo (RNF-09) | `esp32/vatio_esp32_demo.ino:213`, `backend/db/connection.js`, [despliegue](despliegue.md) | Parcial en tránsito: HTTPS observado en Render, ESP32 por HTTP. Cifrado en reposo sin implementar en la aplicación. |
 | Despliegue | `render.yaml`, [despliegue](despliegue.md) | El servicio existente respondió al chequeo de salud. La rama QA y Habeas Data permanece local. |
+
+## Actualización del 10 de noviembre
+
+El formulario de borrador se publicó en Google Forms. El enlace público de respuesta es https://docs.google.com/forms/d/e/1FAIpQLSdE0YHreDJoHdrcJX-PrvWy9xi7G6BLfXf5Io0jRO9HgJXF8A/viewform?usp=publish-editor. La hoja de respuestas se vinculó y se activaron notificaciones a la cuenta creadora. La identidad del responsable, la política y el correo PQR están [POR CONFIRMAR]. La rama publicada requiere revisión y despliegue antes de usar este enlace en el servicio remoto.

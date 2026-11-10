@@ -34,7 +34,7 @@ Vatio es un prototipo de apoyo a la gestión energética. Los cálculos de ahorr
 
 El acceso «Sugerencias / Reportar un problema» está en la barra lateral de escritorio, el menú Más en móvil, el pie de las 12 vistas y el login. Abre el enlace HTTPS de respuesta en otra pestaña. Vatio no agrega datos personales a la URL. Si falta `VATIO_FEEDBACK_URL`, se informa «Canal no configurado» y se registra una advertencia de arranque. El correo se enlaza si existe `VATIO_PQR_EMAIL`.
 
-Se entregó la [guía para crear el Forms y su hoja de respuestas](forms-feedback-guia.md). La URL, el buzón, la custodia, la notificación y la aceptación del aviso dentro del formulario requieren configuración y verificación institucional. Vatio no almacena envíos de soporte ni dispone de un formulario interno, bandeja, estados o plazos automatizados.
+Se entregó la [guía para crear el Forms y su hoja de respuestas](forms-feedback-guia.md). El formulario de borrador está publicado y vinculado a una hoja de respuestas de la cuenta que lo creó. El buzón, el responsable, la política y la custodia requieren confirmación institucional. Vatio no almacena envíos de soporte ni dispone de un formulario interno, bandeja, estados o plazos automatizados.
 
 ## 5 Verificación técnica
 
@@ -51,12 +51,16 @@ Los estados corresponden al prototipo y a la evidencia indicada. No equivalen a 
 | Roles (RNF-10) | CUMPLE en API. Dueño/administrador, operaciones, empleado de cierre, finanzas, sostenibilidad, dueño de cadena, técnico instalador, analista de datos y empleado no técnico. [Matriz de permisos](../backend/domain/permissions.js#L49), [pruebas](../tests/api/rbac.test.js#L33). |
 | Retención, supresión y bases temporales | PARCIAL. La telemetría cruda se agrega a partir de dos días y se depuran copias por cantidad. La suite usa bases temporales. No hay vencimiento formal, purga de datos personales ni garantía de persistencia en el plan gratuito de Render. [Agregación](../backend/app/ingestion.js#L208), [copias](../backend/ops/backup.js#L53), [despliegue](despliegue.md). |
 | Incidentes | PARCIAL. Hay auditoría, eventos y registro de errores. Falta un procedimiento de contención, registro especializado y notificación a titulares o autoridad. [Registro técnico](../backend/runtime.js#L62), [operación](operaciones.md). |
-| Sugerencias y PQR | PARCIAL. Enlace externo configurable y estado de canal ausente probados. La URL y el correo reales siguen pendientes. [Interfaz](../public/app.js#L309), [E2E](../qa/e2e/vatio.spec.js#L119). |
+| Sugerencias y PQR | PARCIAL. Enlace externo configurable y estado de canal ausente probados. El enlace de borrador existe y el correo PQR está pendiente. [Interfaz](../public/app.js#L309), [E2E](../qa/e2e/vatio.spec.js#L119). |
 
 ## 6 Confirmaciones del equipo
 
 - [POR CONFIRMAR] Responsable y domicilio del tratamiento, canal oficial y correo de PQR.
-- [POR CONFIRMAR] URL de respuesta del Forms, aviso de privacidad, custodia y acceso a la hoja.
+- [POR CONFIRMAR] Aviso de privacidad, responsable, custodia y acceso a la hoja del Forms.
 - [POR CONFIRMAR] Plazos de conservación, gestión de incidentes y fecha de vigencia formal.
 - [POR CONFIRMAR] Aplicabilidad del RNBD según la naturaleza y condiciones del responsable. [Criterios de la SIC](https://sedeelectronica.sic.gov.co/publicaciones/boletin-juridico/concepto/cuales-personas-estan-obligadas-realizar-el-registro-de-bases-de-datos-personales-en-el-rnbd).
 - [POR CONFIRMAR] Revisión jurídica o institucional.
+
+## Actualización del 10 de noviembre
+
+El formulario de borrador se publicó en Google Forms. El enlace público de respuesta es https://docs.google.com/forms/d/e/1FAIpQLSdE0YHreDJoHdrcJX-PrvWy9xi7G6BLfXf5Io0jRO9HgJXF8A/viewform?usp=publish-editor. La hoja de respuestas se vinculó y se activaron notificaciones a la cuenta creadora. La identidad del responsable, la política y el correo PQR están [POR CONFIRMAR]. La rama publicada requiere revisión y despliegue antes de usar este enlace en el servicio remoto.
