@@ -17,6 +17,9 @@ Imagen rasterizada: [`der.png`](der.png). Vector: [`der.svg`](der.svg). Fuente M
 | `005_events_and_errors.sql` | Eventos de analítica y registro de errores. |
 | `006_tariff_note.sql` | Columna `note` en `tariffs` (la tarifa de demostración se marca como ejemplo). |
 | `007_legacy_telemetry_to_readings.sql` | Migra la tabla `telemetry` del primer MVP a sedes, cargas, módulos y lecturas. Omite las filas inválidas y conserva `telemetry` como archivo; la aplicación ya no escribe en ella. |
+| `008_operations_manager_description.sql` | Aclara que el gerente de operaciones propone acciones. |
+| `009_recommendation_details_and_benchmark.sql` | Agrega detalles de recomendaciones y la referencia sectorial. |
+| `010_consents.sql` | Guarda pruebas de autorización y aceptación por usuario y versiones. |
 
 El ejecutor (`backend/db/migrate.js`) aplica cada archivo en orden dentro de una transacción, lo registra en `schema_migrations` con su checksum SHA-256 (normalizando saltos de línea) y es idempotente. Si un archivo ya aplicado fue modificado o eliminado, se niega a continuar: todo cambio de esquema debe ser una migración nueva. Tras cada migración se verifica `PRAGMA foreign_key_check`.
 
@@ -32,6 +35,7 @@ Las fechas son texto ISO-8601 en UTC. Las enumeraciones se validan con restricci
 |---|---|
 | `roles` | Catálogo de los nueve roles: `owner`, `operations_manager`, `closing_employee`, `finance`, `sustainability`, `chain_owner`, `installer_technician`, `data_analyst`, `non_technical_employee`. |
 | `users` | Usuario con contraseña derivada (scrypt: `salt`, `hash`), rol, estado activo y último ingreso. |
+| `consents` | Prueba de activación: usuario, fecha UTC, IP del par TCP, agente de usuario, versiones y las dos aceptaciones. Una fila por usuario y par de versiones. |
 | `user_sites` | Sedes que cada usuario puede ver (un dueño de cadena tiene varias filas). |
 | `audit` | Bitácora: usuario, rol, acción (`event`), carga, resultado (`executed`, `rejected`, `discarded`), motivo y hora simulada. Las filas heredadas conservan `event` y `details`. |
 | `events` | Eventos de analítica de producto (nombre y propiedades JSON sin secretos). |
@@ -112,6 +116,7 @@ erDiagram
   roles |o--o{ audit : "role"
   users |o--o{ audit : "user_id"
   loads ||--o{ baselines : "load_id"
+  users ||--o{ consents : "user_id"
   users |o--o{ control_actions : "decided_by"
   users |o--o{ control_actions : "requested_by"
   recommendations |o--o{ control_actions : "recommendation_id"
@@ -179,6 +184,17 @@ erDiagram
     string window_start
     string window_end
     string computed_at
+  }
+  consents {
+    int id PK
+    int user_id FK
+    string timestamp_utc
+    string ip_address
+    string user_agent
+    string policy_version
+    string terms_version
+    int habeas_data_accepted
+    int terms_accepted
   }
   control_actions {
     int id PK
@@ -284,6 +300,9 @@ erDiagram
     string reason
     string baseline_window_start
     string baseline_window_end
+    string description
+    string evidence
+    string score_explanation
   }
   roles {
     string code PK
@@ -305,6 +324,7 @@ erDiagram
     int alert_window_minutes
     int updated_by FK
     string updated_at
+    float sector_reference_kwh_per_day
   }
   site_schedules {
     string site_id PK,FK

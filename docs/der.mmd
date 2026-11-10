@@ -6,6 +6,7 @@ erDiagram
   roles |o--o{ audit : "role"
   users |o--o{ audit : "user_id"
   loads ||--o{ baselines : "load_id"
+  users ||--o{ consents : "user_id"
   users |o--o{ control_actions : "decided_by"
   users |o--o{ control_actions : "requested_by"
   recommendations |o--o{ control_actions : "recommendation_id"
@@ -73,6 +74,17 @@ erDiagram
     string window_start
     string window_end
     string computed_at
+  }
+  consents {
+    int id PK
+    int user_id FK
+    string timestamp_utc
+    string ip_address
+    string user_agent
+    string policy_version
+    string terms_version
+    int habeas_data_accepted
+    int terms_accepted
   }
   control_actions {
     int id PK
@@ -178,6 +190,9 @@ erDiagram
     string reason
     string baseline_window_start
     string baseline_window_end
+    string description
+    string evidence
+    string score_explanation
   }
   roles {
     string code PK
@@ -199,6 +214,7 @@ erDiagram
     int alert_window_minutes
     int updated_by FK
     string updated_at
+    float sector_reference_kwh_per_day
   }
   site_schedules {
     string site_id PK,FK

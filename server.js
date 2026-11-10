@@ -6,6 +6,9 @@ const { createRuntime } = require('./backend/runtime');
 const { createHttpServer } = require('./backend/http');
 const { localIPv4Addresses } = require('./backend/http/telemetry');
 
+if (!config.feedbackUrl) {
+  console.warn(JSON.stringify({ level: 'warn', code: 'feedback_unconfigured', message: 'VATIO_FEEDBACK_URL no está configurada.' }));
+}
 const app = createRuntime({ config, db: openDatabase(config.dbPath) });
 const { server } = createHttpServer(app);
 

@@ -16,7 +16,7 @@ const DOCS = path.join(__dirname, '..', 'docs');
 
 // Column positions of each group, left to right. Entities not listed fall into the legacy row.
 const LAYOUT = [
-  ['roles', 'users', 'user_sites', 'audit', 'events', 'error_log'],
+  ['roles', 'users', 'user_sites', 'consents', 'audit', 'events', 'error_log'],
   ['sites', 'site_schedules', 'tariffs', 'settings'],
   ['loads', 'modules', 'readings', 'readings_hourly'],
   ['baselines', 'alerts', 'recommendations', 'control_actions']

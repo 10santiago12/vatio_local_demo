@@ -36,6 +36,47 @@ async function uiLogin(page, password) {
 }
 
 test.describe('autenticacion', () => {
+  test('activación exige ambas casillas y permite volver a entrar sin repetirlas', async ({ page, request }, info) => {
+    const cookie = process.env.QA_SESSION_COOKIE;
+    const owner = await (await request.get(baseUrl() + '/api/auth/me', { headers: { cookie } })).json();
+    const username = 'activation-' + info.project.name;
+    const password = process.env.QA_ADMIN_PASSWORD;
+    const created = await request.post(baseUrl() + '/api/users', {
+      headers: { cookie, 'x-csrf-token': owner.csrf },
+      data: { username, password, role: 'non_technical_employee' },
+    });
+    expect(created.status()).toBe(201);
+    const contactEndpoint = '**/api/public/contact';
+    await page.route(contactEndpoint, (route) => route.fulfill({ json: { feedbackUrl: null, pqrEmail: null } }));
+    await page.goto(baseUrl());
+    await expect(page.locator('.contact-footer')).toContainText('Canal no configurado');
+    await page.locator('.contact-footer button.feedback-link').click();
+    await expect(page.locator('#toast-root')).toContainText('Canal no configurado');
+    await page.unroute(contactEndpoint);
+    await page.reload();
+    await expect(page.locator('.contact-footer .feedback-link')).toHaveAttribute('href', 'https://example.test/vatio-feedback');
+    await page.locator('#username').fill(username);
+    await page.locator('#password').fill(password);
+    await page.getByRole('button', { name: 'Ingresar', exact: true }).click();
+    const habeas = page.getByRole('checkbox', { name: /Autorizo el tratamiento/ });
+    const terms = page.getByRole('checkbox', { name: /Acepto los Términos/ });
+    await expect(habeas).toBeVisible();
+    await expect(habeas).not.toBeChecked();
+    await expect(terms).not.toBeChecked();
+    const activate = page.getByRole('button', { name: 'Activar e ingresar' });
+    await expect(activate).toBeDisabled();
+    await habeas.check();
+    await expect(activate).toBeDisabled();
+    await terms.check();
+    await expect(activate).toBeEnabled();
+    await activate.click();
+    await expect(page.locator('main.main')).toBeVisible();
+    await page.locator('[data-action=logout]').click();
+    await page.locator('#username').fill(username);
+    await page.locator('#password').fill(password);
+    await page.getByRole('button', { name: 'Ingresar', exact: true }).click();
+    await expect(page.locator('main.main')).toBeVisible();
+  });
   test('login correcto y contrasena incorrecta', async ({ page }) => {
     await page.goto(baseUrl());
     await page.fill('#username', 'admin');
@@ -73,6 +114,41 @@ test.describe('sesion iniciada', () => {
       await page.screenshot({ path: path.join(dir, `${view.replace(/[^a-z0-9]+/gi, '_')}.png`), fullPage: true });
     }
     expect(problems).toEqual([]);
+  });
+
+  test('sugerencias aparece en las 12 vistas y abre el Forms en otra pestaña', async ({ page, context }, info) => {
+    const url = 'https://example.test/vatio-feedback';
+    await context.route(url, (route) => route.fulfill({ contentType: 'text/html', body: '<title>Formulario de QA</title>' }));
+    const mobile = ['iphone-13', 'pixel-7'].includes(info.project.name);
+    for (const view of VIEWS) {
+      await page.goto(viewUrl(view));
+      await expect(page.locator('.contact-footer .feedback-link')).toHaveAttribute('href', url);
+      if (mobile) await page.getByRole('button', { name: 'Más', exact: true }).click();
+      const feedback = page.locator(mobile ? '.sheet .feedback-link' : '.sidebar .feedback-link');
+      await expect(feedback).toBeVisible();
+      await expect(feedback).toHaveAttribute('href', url);
+      await expect(feedback).toHaveAttribute('rel', 'noopener noreferrer');
+      if (view === 'Inicio') {
+        if (['chromium', 'pixel-7'].includes(info.project.name)) {
+          await page.screenshot({
+            path: info.outputPath('feedback-' + info.project.name + '.png'),
+            animations: 'disabled',
+            mask: [page.getByText(/^http:\/\/.*\/api\/telemetry$/)],
+            maskColor: '#152329',
+          });
+        }
+        const opened = context.waitForEvent('page');
+        await feedback.click();
+        const form = await opened;
+        await expect(form).toHaveURL(url);
+        await expect(form).toHaveTitle('Formulario de QA');
+        await form.close();
+        if (mobile) {
+          await page.keyboard.press('Escape');
+          await expect(page.getByRole('button', { name: 'Más', exact: true })).toBeFocused();
+        }
+      }
+    }
   });
 
   test('el tema cambia y persiste tras recargar', async ({ page }) => {

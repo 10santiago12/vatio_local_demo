@@ -1,3 +1,4 @@
+const { acceptance } = require('./helpers/api');
 const { test, before, after } = require('node:test');
 const assert = require('node:assert/strict');
 const { spawn } = require('node:child_process');
@@ -37,7 +38,7 @@ test('device key and input are checked', async () => {
 });
 
 test('login, CSRF, and critical load policy enforced on server', async () => {
-  const login = await call('/api/auth/login', {method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({username:'admin',password:'test-only-strong-password'})});
+  const login = await call('/api/auth/login', {method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({username:'admin',password:'test-only-strong-password',...acceptance})});
   assert.equal(login.response.status, 200);
   const cookie = login.response.headers.get('set-cookie').split(';')[0];
   const info = await call('/api/info',{headers:{cookie}});
@@ -60,7 +61,7 @@ test('telemetry is restored after server restart', async () => {
   const closed = new Promise(r => child.once('exit',r)); child.kill(); await closed;
   child = spawn(process.execPath,['server.js'],{cwd:path.join(__dirname,'..'),env:{...process.env,PORT:String(port),HOST:'127.0.0.1',APP_ENV:'local',VATIO_ENV_FILE:path.join(temp,'absent.env'),VATIO_DB:path.join(temp,'test.sqlite'),VATIO_ADMIN_PASSWORD:'test-only-strong-password',VATIO_DEVICE_KEY:'test-device-secret'}});
   for (let n=0;n<100;n++) { try { await fetch(base+'/api/health'); break; } catch { await new Promise(r=>setTimeout(r,100)); } }
-  const login=await call('/api/auth/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({username:'admin',password:'test-only-strong-password'})});
+  const login=await call('/api/auth/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({username:'admin',password:'test-only-strong-password',...acceptance})});
   const cookie=login.response.headers.get('set-cookie').split(';')[0];
   const latest=await call('/api/telemetry/latest',{headers:{cookie}});
   assert.equal(latest.body.readings[0].power_w,412);

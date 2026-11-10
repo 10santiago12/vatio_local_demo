@@ -301,6 +301,30 @@ function layout(content, title=state.view){
 }
 
 /* ---------- shell ---------- */
+const privacyLinks = `<a href="/politica-de-tratamiento.html" target="_blank" rel="noopener noreferrer">Política de Tratamiento</a>
+  <a href="/aviso-de-privacidad.html" target="_blank" rel="noopener noreferrer">Aviso de Privacidad</a>
+  <a href="/terminos-y-condiciones.html" target="_blank" rel="noopener noreferrer">Términos y Condiciones</a>`;
+let contact = {};
+
+function feedbackControl(){
+  const label = "Sugerencias / Reportar un problema";
+  return contact.feedbackUrl
+    ? `<a class="feedback-link" href="${escapeHtml(contact.feedbackUrl)}" target="_blank" rel="noopener noreferrer">${label}<span class="sr-only"> (abre otra pestaña)</span></a>`
+    : `<button type="button" class="feedback-link" data-action="feedback-unavailable">${label}</button><small>Canal no configurado</small>`;
+}
+
+function contactFooter(signedIn = false){
+  const pqr = contact.pqrEmail ? `<a href="mailto:${escapeHtml(contact.pqrEmail)}">Correo de PQR</a>` : "<small>Correo de PQR por confirmar</small>";
+  const personalData = signedIn ? '<a href="/api/me/personal-data" target="_blank" rel="noopener noreferrer">Consultar mis datos (JSON)</a>' : "";
+  return `<footer class="contact-footer"><nav aria-label="Privacidad y contacto">${privacyLinks}${pqr}${personalData}</nav>
+    <div class="feedback-slot">${feedbackControl()}</div></footer>`;
+}
+
+function closeMore(){
+  state.moreOpen = false;
+  render({force:true});
+  document.querySelector('[data-action="open-more"]')?.focus();
+}
 function navButtons(){
   return navItems.map(n=>`<button class="nav-btn" data-view="${escapeHtml(n)}" ${state.view===n?'aria-current="page"':""}>${icon(viewIcons[n])}<span>${escapeHtml(n)}</span></button>`).join("");
 }
@@ -310,6 +334,7 @@ function sidebarHtml(){
     <p class="site-name">Panadería La Espiga · Chía</p>
     <nav class="nav" aria-label="Secciones">${navButtons()}</nav>
     <div class="sidebar-foot">
+      <div class="feedback-slot">${feedbackControl()}</div>
       <button class="demo-nav" data-view="${DEMO_VIEW}" ${state.view===DEMO_VIEW?'aria-current="page"':""}>${icon("presentation")}<span>Panel de Demo</span></button>
     </div>`;
 }
@@ -323,7 +348,8 @@ function sheetHtml(){
   const rest = navItems.filter(n=>!primaryMobile.some(p=>p.view===n)).concat(DEMO_VIEW);
   return `<div class="sheet-backdrop" data-action="close-more"></div>
     <div class="sheet" role="dialog" aria-modal="true" aria-label="Más secciones">
-      <h2>Más secciones</h2>
+      <div class="sheet-heading"><h2>Más secciones</h2><button type="button" class="btn" data-action="close-more">Cerrar</button></div>
+      <div class="feedback-slot">${feedbackControl()}</div>
       <nav class="nav">${rest.map(n=>`<button class="nav-btn" data-view="${escapeHtml(n)}" ${state.view===n?'aria-current="page"':""}>${icon(viewIcons[n])}<span>${escapeHtml(n)}</span></button>`).join("")}</nav>
     </div>`;
 }
@@ -351,6 +377,7 @@ function mountShell(){
         <div class="mobile-brand"><span class="logo">${icon("zap")}</span><span class="brand-name">Vatio</span><span class="site-name muted">Panadería La Espiga · Chía</span></div>
         <header class="header" id="header"></header>
         <div class="content" id="content"></div>
+        ${contactFooter(true)}
       </main>
       <nav class="bottom-nav" id="bottom-nav" aria-label="Navegación principal"></nav>
       <div id="more-root"></div>
@@ -885,8 +912,13 @@ document.addEventListener("click", async (event)=>{
   if(action==="cycle-role") cycleRole();
   if(action==="toggle-theme") applyTheme(state.theme==="dark" ? "light" : "dark");
   if(action==="logout") logout();
-  if(action==="open-more"){ state.moreOpen = true; render({force:true}); }
-  if(action==="close-more"){ state.moreOpen = false; render({force:true}); }
+  if(action==="feedback-unavailable") toast("Canal no configurado");
+  if(action==="open-more"){
+    state.moreOpen = true;
+    render({force:true});
+    document.querySelector('.sheet [data-action="close-more"]').focus();
+  }
+  if(action==="close-more") closeMore();
   if(action==="download-csv") exportCsv();
   if(action==="download-json") exportJson();
   if(action==="reset-source") await resetSource();
@@ -910,7 +942,15 @@ document.addEventListener("click", async (event)=>{
 });
 
 document.addEventListener("keydown", (event)=>{
-  if(event.key==="Escape" && state.moreOpen){ state.moreOpen = false; render({force:true}); }
+  if(!state.moreOpen) return;
+  if(event.key==="Escape") closeMore();
+  if(event.key==="Tab"){
+    const controls = [...document.querySelectorAll(".sheet button, .sheet a")];
+    const first = controls[0];
+    const last = controls.at(-1);
+    if(event.shiftKey && document.activeElement === first){ event.preventDefault(); last.focus(); }
+    else if(!event.shiftKey && document.activeElement === last){ event.preventDefault(); first.focus(); }
+  }
 });
 
 let resizeTimer = null;
@@ -920,18 +960,68 @@ window.addEventListener("resize", ()=>{
 });
 
 (async function init(){
+  try {
+    const response = await fetch("/api/public/contact");
+    if(response.ok) contact = await response.json();
+  } catch { /* Contact configuration is optional for sign-in. */ }
+
   async function authenticate(){
     let response = await fetch('/api/auth/me');
     if (!response.ok) {
       const root=document.getElementById('app');
-      root.innerHTML=`<main style="max-width:420px;margin:10vh auto;padding:24px" class="card"><h1>Ingresar a VATIO</h1><p>Usa el usuario configurado para esta instalación.</p><form id="login-form"><div class="field"><label for="username">Usuario</label><input id="username" autocomplete="username" required></div><div class="field"><label for="password">Contraseña</label><input id="password" type="password" autocomplete="current-password" required></div><p id="login-error" role="alert"></p><button class="btn primary" type="submit">Ingresar</button></form></main>`;
+      root.innerHTML=`<main class="card login-card"><h1>Ingresar a VATIO</h1><p>Usa el usuario configurado para esta instalación.</p>
+        <form id="login-form">
+          <div class="field"><label for="username">Usuario</label><input id="username" autocomplete="username" required></div>
+          <div class="field"><label for="password">Contraseña</label><input id="password" type="password" autocomplete="current-password" required></div>
+          <fieldset id="activation-consent" hidden disabled>
+            <legend>Activación de la cuenta</legend>
+            <label><input id="habeas-data-accepted" type="checkbox" required> Autorizo el tratamiento de mis datos según la Política de Tratamiento.</label>
+            <label><input id="terms-accepted" type="checkbox" required> Acepto los Términos y Condiciones.</label>
+          </fieldset>
+          <p id="login-error" role="alert"></p><button class="btn primary" type="submit">Ingresar</button>
+        </form>${contactFooter()}</main>`;
+      const form = document.getElementById("login-form");
+      const consent = document.getElementById("activation-consent");
+      const habeas = document.getElementById("habeas-data-accepted");
+      const terms = document.getElementById("terms-accepted");
+      const error = document.getElementById("login-error");
+      const submit = form.querySelector("button[type=submit]");
+      let versions = null;
+      let submitting = false;
+      const updateSubmit = () => { submit.disabled = submitting || (versions && !(habeas.checked && terms.checked)); };
+      consent.addEventListener("change", updateSubmit);
       response = await new Promise(resolve => {
-        document.getElementById('login-form').addEventListener('submit', async event => {
+        form.addEventListener("submit", async event => {
           event.preventDefault();
+          if(submit.disabled) return;
+          submitting = true;
+          updateSubmit();
+          error.textContent = "";
           try {
-            const r=await fetch('/api/auth/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({username:document.getElementById('username').value,password:document.getElementById('password').value})});
-            if(r.ok) resolve(r); else document.getElementById('login-error').textContent='No fue posible iniciar sesión.';
-          } catch { document.getElementById('login-error').textContent='No se pudo conectar con el servidor.'; }
+            const r = await fetch("/api/auth/login", {
+              method:"POST", headers:{"content-type":"application/json"},
+              body:JSON.stringify({
+                username:document.getElementById("username").value, password:document.getElementById("password").value,
+                ...(versions && { ...versions, habeasDataAccepted:habeas.checked, termsAccepted:terms.checked }),
+              }),
+            });
+            if(r.ok) return resolve(r);
+            if(r.status === 428){
+              const { policyVersion, termsVersion, error:message } = await r.json();
+              versions = { policyVersion, termsVersion };
+              consent.hidden = consent.disabled = habeas.checked = terms.checked = false;
+              submit.textContent = "Activar e ingresar";
+              error.textContent = message;
+              habeas.focus();
+            } else {
+              error.textContent = r.status === 429 ? "Demasiados intentos. Intenta nuevamente en un minuto." : "No fue posible iniciar sesión.";
+            }
+          } catch {
+            error.textContent = "No se pudo conectar con el servidor.";
+          } finally {
+            submitting = false;
+            updateSubmit();
+          }
         });
       });
     }

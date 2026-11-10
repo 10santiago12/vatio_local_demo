@@ -10,12 +10,13 @@ function register(router, app) {
   router.post('/api/auth/login', async (ctx) => {
     let payload;
     try { payload = await ctx.body(); } catch { throw badRequest('Solicitud inválida.'); }
-    const result = app.auth.login(payload.username, payload.password, ctx.req.socket.remoteAddress);
+    if (!payload || typeof payload !== 'object' || Array.isArray(payload)) throw badRequest('Solicitud inválida.');
+    const result = app.auth.login(payload.username, payload.password, ctx.req.socket.remoteAddress, payload, ctx.req.headers['user-agent']);
     if (!result) throw new HttpError(401, 'Credenciales inválidas.', 'invalid_credentials');
     if (result.limited) throw new HttpError(429, 'Demasiados intentos.', 'too_many_attempts');
     const { id, ...session } = result;
     return { status: 200, body: session, headers: { 'Set-Cookie': `${COOKIE}=${id}${cookieAttributes(ctx.req, app.auth.SESSION_MS / 1000)}` } };
-  }, { public: true, doc: 'Inicia sesión con usuario y contraseña.' });
+  }, { public: true, doc: 'Inicia sesión. La activación inicial requiere las dos aceptaciones y las versiones vigentes.' });
 
   router.get('/api/auth/me', ({ user }) => json(200, app.auth.describe(user)), { doc: 'Perfil de la sesión: usuario, perfil, nombre y permisos.' });
 

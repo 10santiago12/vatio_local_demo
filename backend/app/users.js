@@ -83,4 +83,4 @@ function createUserAdmin({ repos, access, auth }) {
   };
 }
 
-module.exports = { createUserAdmin, USERNAME_PATTERN };
+module.exports = { createUserAdmin, USERNAME_PATTERN, presentUser: present };

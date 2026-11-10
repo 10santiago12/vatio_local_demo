@@ -33,7 +33,7 @@ function legacyDatabase() {
 test('legacy telemetry is migrated into sites, loads, modules and readings', () => {
   const db = legacyDatabase();
   const telemetryBefore = db.prepare('SELECT COUNT(*) AS n FROM telemetry').get().n;
-  assert.deepEqual(migrate(db).applied.map((n) => n.slice(0, 3)), ['006', '007', '008', '009']);
+  assert.deepEqual(migrate(db).applied.map((n) => n.slice(0, 3)), ['006', '007', '008', '009', '010']);
 
   assert.equal(db.prepare("SELECT name FROM sites WHERE id = 'la-espiga-chia'").get().name, 'Panadería La Espiga – Chía');
   assert.equal(db.prepare("SELECT COUNT(*) AS n FROM sites WHERE id <> 'la-espiga-chia'").get().n, 0, 'invalid site slug is skipped');
@@ -74,7 +74,7 @@ test('the legacy migration statements are idempotent and an empty legacy table i
   assert.deepEqual(['sites', 'loads', 'modules', 'readings'].map(count), before);
 
   const empty = openDatabase(':memory:');
-  assert.equal(migrate(empty).version, 9);
+  assert.equal(migrate(empty).version, 10);
   assert.equal(empty.prepare('SELECT COUNT(*) AS n FROM readings').get().n, 0);
   assert.equal(empty.prepare('SELECT COUNT(*) AS n FROM sites').get().n, 0);
 });

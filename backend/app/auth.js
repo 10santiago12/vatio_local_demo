@@ -10,6 +10,7 @@ const crypto = require('node:crypto');
 const { ROLES } = require('../domain/constants');
 const { permissionsOf } = require('../domain/permissions');
 const { verifyPassword } = require('./passwords');
+const { requireConsent } = require('./consent');
 
 const SESSION_MS = 8 * 3600000;
 const THROTTLE_WINDOW_MS = 60000;
@@ -35,7 +36,7 @@ function createAuth({ repos, access, wallNow }) {
     };
   }
 
-  function login(username, password, ip) {
+  function login(username, password, ip, input, userAgent) {
     const now = wallNow();
     let a = attempts.get(ip);
     if (!a || now - a.since > THROTTLE_WINDOW_MS) { a = { since: now, count: 0 }; attempts.set(ip, a); }
@@ -46,6 +47,7 @@ function createAuth({ repos, access, wallNow }) {
       access.audit({ user: null, event: 'login_failed', result: 'rejected', reason: 'Usuario o contraseña incorrectos.', details: {} });
       return null;
     }
+    requireConsent({ consents: repos.consents, userId: user.id, input, now, ip, userAgent });
     attempts.delete(ip);
     const id = crypto.randomBytes(32).toString('hex');
     const session = {

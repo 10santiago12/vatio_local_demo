@@ -1,28 +1,29 @@
-# Matriz de cumplimiento (estado al 4 de noviembre de 2026)
+# Matriz de cumplimiento de Vatio
 
-Estado: **Listo** = implementado y probado. **API lista** = implementado y probado en la API; la interfaz web aún no lo conecta. **Pendiente** = no implementado.
+Actualización del 10 de noviembre de 2026. «API lista» indica que la función se probó en el servidor y que su conexión a la interfaz puede seguir pendiente.
 
 | Requisito | Evidencia | Estado |
 |---|---|---|
-| Inicio de sesión, CSRF y roles | `backend/app/auth.js`, `backend/domain/permissions.js`, `tests/api/rbac.test.js` | Listo: 9 roles; permisos en la capa de aplicación; intentos denegados auditados |
-| Clave de dispositivo | `backend/config.js`, `backend/http/telemetry.js` | Listo: obligatoria por entorno; sin rotación automática |
-| Telemetría persistente e ingesta | `backend/app/ingestion.js`, migraciones 001-007 | Listo: idempotente, validación estricta, buffer sin conexión |
-| Modelo de datos y DER | `docs/der.md`, `backend/db/migrations/` | Listo: 21 tablas, migraciones versionadas |
-| Control seguro (RF-06, RF-07) | `backend/domain/control.js`, `tests/api/control.test.js` | API lista: aprobación explícita, crítica rechazada y auditada, solo monitoreo queda pendiente |
-| Modo cierre y estado seguro (RF-12, RNF-18) | `backend/domain/control.js`, `backend/app/control.js` | API lista |
-| Alertas y mantenimiento predictivo (RF-04, RF-15) | `backend/domain/alerts.js`, `backend/app/alerts.js` | API lista |
-| Recomendaciones y puntaje (RF-05) | `backend/domain/recommendations.js` | API lista |
-| Costo, tarifas y línea base (RF-02, RF-03) | `backend/domain/cost.js`, `baseline.js` | Listo en API |
-| Ahorro, retorno y ahorro atribuible (RF-10, RF-14) | `backend/domain/savings.js`, `backend/app/value.js` | API lista |
-| Reportes PDF, CSV y ODS 7 (RF-13, RF-16) | `backend/app/report-render.js`, `pdf.js` | API lista: valores idénticos a la API |
-| Multisede y datos crudos (RF-09, RF-17, RNF-14) | `backend/domain/multisite.js`, `backend/app/data-exchange.js` | API lista: exportación y reimportación verificada |
-| Módulos y fabricantes (RF-08, RNF-03) | `backend/adapters/manufacturers/`, `backend/app/modules.js` | API lista |
-| Interfaz web conectada a la API | `public/app.js` | Parcial: lecturas en vivo reales; varias pantallas aún con datos de ejemplo |
-| Pruebas | 288 pruebas (`npm test`) | Listo: unitarias del dominio, API e integración. Navegador (RNF-04): 39 pruebas Playwright aprobadas en Chrome, Edge, Chromium, Firefox, WebKit y 2 móviles emulados (`docs/qa.md`). Carga (RNF-01, RNF-02): cumplen en local, p95 de 420 ms con 50 módulos y 0,36 s de renderizado con 20 equipos (`docs/qa-carga.md`). Pendientes con personas: dispositivos reales y pruebas de usabilidad RNF-05/06 (plantillas en `docs/qa.md`) |
-| Documentación | `README.md`, `docs/api.md`, `docs/der.md`, `docs/stack-y-arquitectura.md`, `docs/despliegue.md` | Listo |
-| Integración externa (webhook, correo) | — | Pendiente |
-| Registro de eventos y errores | `backend/ops/request-log.js`, tablas `events` y `error_log`, `docs/operaciones.md` | Listo: logs JSON con `X-Request-Id`, eventos de uso y errores consultables por el dueño |
-| Métricas | `GET /api/ops/metrics` | Listo: solicitudes por clase, latencia p50/p95, tamaño de la base, sesiones, último respaldo (en memoria, por proceso) |
-| Respaldo y recuperación | `backend/ops/backup.js`, `scripts/backup.js`, `scripts/restore.js` | Listo y probado (respaldar, dañar, restaurar). En Render gratis el disco es efímero: descargar copias fuera del servidor o usar disco persistente |
-| TLS (RNF-09) y cifrado en reposo | — | TLS depende del hosting (HTTPS); cifrado en reposo no implementado |
-| Despliegue | `render.yaml`, `docs/despliegue.md` | Pendiente de ejecutar (cuenta y dominio del usuario) |
+| Inicio de sesión, CSRF y roles (RNF-10) | `backend/app/auth.js`, `backend/domain/permissions.js`, `tests/api/rbac.test.js` | Listo en API. Nueve roles y denegaciones auditadas. |
+| Clave de dispositivo | `backend/config.js`, `backend/http/telemetry.js` | Listo por entorno, sin rotación automática. |
+| Telemetría persistente e ingesta (RF-01) | `backend/app/ingestion.js`, migraciones 001–007 | Listo en API. Validación, persistencia e idempotencia. |
+| Búfer sin conexión (RNF-08) | `tests/ingestion.test.js:181`, `backend/adapters/simulator/module-fleet.js:80`, `esp32/vatio_esp32_demo.ino:209` | Parcial. Recuperación probada en simulador y API, pendiente en firmware. |
+| Modelo de datos y DER | `docs/der.md`, `backend/db/migrations/` | Listo. 22 tablas y migraciones 001–010. |
+| Control seguro y modo cierre (RF-06/07/12, RNF-18) | `backend/domain/control.js:55`, `tests/api/control.test.js:137` | API lista en simulación. Inactivo tras 120 s, estado seguro tras 300 s o sin reporte previo. |
+| Alertas y mantenimiento (RF-04/15) | `backend/domain/alerts.js`, `backend/app/alerts.js` | API lista. |
+| Recomendaciones y puntaje (RF-05) | `backend/app/recommendations.js` | API lista. |
+| Costo, tarifas y línea base (RF-02/03) | `backend/domain/cost.js`, `backend/domain/baseline.js`, `backend/app/analytics.js` | API lista. |
+| Ahorro, retorno y ahorro atribuible (RF-10/14) | `backend/domain/savings.js`, `backend/app/value.js` | API lista. |
+| Reportes PDF, CSV y ODS 7 (RF-13/16) | `backend/app/report-render.js`, `backend/app/pdf.js` | API lista. La verificación de extracción PDF se omitió en el entorno sin `pdftotext`. |
+| Multisede y datos crudos (RF-09/17, RNF-14) | `backend/domain/multisite.js`, `backend/app/data-exchange.js:16`, `tests/api/data.test.js` | API lista para exportar y reimportar. Anonimización parcial: excluye campos de cuenta y conserva identificadores operativos. |
+| Módulos y fabricantes (RF-08, RNF-03) | `backend/adapters/manufacturers/`, `backend/app/modules.js` | API lista. |
+| Interfaz web conectada a la API | `public/app.js`, [informe QA](qa-informe.md) | Parcial. Lecturas en vivo desde API y varias pantallas con ejemplos. |
+| Pruebas | [Informe QA](qa-informe.md), [carga](qa-carga.md) | 307 pruebas Node y 53 E2E aprobadas. Carga RNF-01 y RNF-02 aprobada en local. Pruebas de usabilidad y de los cambios en dispositivos físicos pendientes. |
+| Consentimiento | `backend/app/consent.js:8`, `backend/db/migrations/010_consents.sql:2`, `tests/api/privacy.test.js:6` | Listo en prototipo. Dos aceptaciones al activar, prueba por versiones. |
+| Derechos y páginas públicas | `backend/http/privacy.js:12`, [Habeas Data](habeas-data.md) | Parcial. Consulta propia auditada y documentos públicos. Rectificación y supresión manuales cuando se habilite el canal. |
+| Sugerencias y PQR | `public/app.js:309`, `render.yaml`, [guía](forms-feedback-guia.md) | Parcial. Enlace y estado sin configuración probados. URL real y correo por confirmar. |
+| Integración externa (webhook o notificación) | [Habeas Data](habeas-data.md) | Pendiente. El enlace de Forms no integra almacenamiento ni seguimiento en Vatio. |
+| Registro, incidentes y métricas | `backend/runtime.js`, `backend/ops/request-log.js`, `docs/operaciones.md` | Parcial. Auditoría, eventos, errores y métricas disponibles. Gestión formal de incidentes y notificaciones pendiente. |
+| Respaldo y retención | `backend/ops/backup.js:53`, `backend/app/ingestion.js:208` | Parcial. Copias rotadas y agregación de telemetría. Sin ciclo de vida aprobado para datos personales. |
+| TLS y cifrado en reposo (RNF-09) | `esp32/vatio_esp32_demo.ino:213`, `backend/db/connection.js`, [despliegue](despliegue.md) | Parcial en tránsito: HTTPS observado en Render, ESP32 por HTTP. Cifrado en reposo sin implementar en la aplicación. |
+| Despliegue | `render.yaml`, [despliegue](despliegue.md) | El servicio existente respondió al chequeo de salud. La rama QA y Habeas Data permanece local. |

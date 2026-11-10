@@ -15,6 +15,9 @@ const { createRuntime } = require('../../backend/runtime');
 const { createHttpServer } = require('../../backend/http');
 const { ANCHOR } = require('./db');
 
+const { CONSENT_VERSIONS } = require('../../backend/app/consent');
+const acceptance = { ...CONSENT_VERSIONS, habeasDataAccepted: true, termsAccepted: true };
+
 const PASSWORD = 'test-only-strong-password';
 
 /**
@@ -40,7 +43,7 @@ async function startApp(options = {}) {
 
   /** A logged-in client: `call(method, path, body)` returns `{status, body, headers, text}`. */
   async function login(username, password = PASSWORD) {
-    const response = await fetch(`${base}/api/auth/login`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ username, password }) });
+    const response = await fetch(`${base}/api/auth/login`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ username, password, ...acceptance }) });
     const session = await response.json();
     const cookie = (response.headers.get('set-cookie') || '').split(';')[0];
     async function call(method, url, body, extraHeaders = {}) {
@@ -68,4 +71,4 @@ async function startApp(options = {}) {
   };
 }
 
-module.exports = { startApp, PASSWORD };
+module.exports = { startApp, PASSWORD, acceptance };

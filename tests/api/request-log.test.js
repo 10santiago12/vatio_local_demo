@@ -1,6 +1,6 @@
 const { test, before, after } = require('node:test');
 const assert = require('node:assert/strict');
-const { startApp, PASSWORD } = require('../helpers/api');
+const { startApp, PASSWORD, acceptance } = require('../helpers/api');
 const { createMetrics, requestLine } = require('../../backend/ops/request-log');
 
 let env;
@@ -10,7 +10,7 @@ after(() => env.close());
 test('every response carries a fresh X-Request-Id and one JSON log line without secrets', async () => {
   const lines = [];
   env.app.logRequest = (entry) => lines.push(requestLine({ at: 'T', ...entry }));
-  const login = await fetch(`${env.base}/api/auth/login?token=abc`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ username: 'admin', password: PASSWORD }) });
+  const login = await fetch(`${env.base}/api/auth/login?token=abc`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ username: 'admin', password: PASSWORD, ...acceptance }) });
   const other = await fetch(`${env.base}/api/health`);
   const id1 = login.headers.get('x-request-id');
   const id2 = other.headers.get('x-request-id');

@@ -1,3 +1,4 @@
+const { acceptance } = require('./helpers/api');
 const { test, before, after } = require('node:test');
 const assert = require('node:assert/strict');
 const { spawn, spawnSync } = require('node:child_process');
@@ -30,7 +31,7 @@ const device = (body) => post('/api/telemetry', body, { 'x-device-key': KEY });
 const esp = (over = {}) => ({ module_id: 'MX-001', load_id: 'freezer', load_name: 'Congelador vertical', manufacturer: 'EnerSense', voltage_v: 120.1, current_a: 3.43, power_w: 412, energy_kwh: 0.123, status: 'active', timestamp: '', ...over });
 const gateway = (readings, extra = {}) => ({ gateway_id: 'ESP32-DEMO-01', site_id: 'la-espiga-chia', readings, ...extra });
 async function authed(url, options = {}) {
-  const login = await fetch(base + '/api/auth/login', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ username: 'admin', password: PASSWORD }) });
+  const login = await fetch(base + '/api/auth/login', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ username: 'admin', password: PASSWORD, ...acceptance }) });
   const cookie = login.headers.get('set-cookie').split(';')[0];
   const csrf = (await login.json()).csrf;
   const response = await fetch(base + url, { ...options, headers: { cookie, 'x-csrf-token': csrf, ...(options.headers || {}) } });

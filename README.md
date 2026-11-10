@@ -29,6 +29,8 @@ La contraseña inicial solo se usa al crear el usuario: cambiar la variable desp
 | `PORT` | `3000` por defecto | del entorno (por ejemplo `8080`) |
 | `VATIO_ADMIN_PASSWORD` | Opcional; si se define, mínimo 16 caracteres | Obligatoria, mínimo 16 caracteres, no puede ser un valor conocido |
 | `VATIO_DEVICE_KEY` | Opcional; sin ella se rechaza toda ingestión | Obligatoria, mínimo 16 caracteres, distinta de la contraseña |
+| `VATIO_FEEDBACK_URL` | Opcional: URL HTTPS pública de respuesta del Forms | Igual |
+| `VATIO_PQR_EMAIL` | Opcional: una dirección de correo de PQR | Igual |
 | `VATIO_DB` | Opcional (`data/vatio.sqlite`) | Ruta persistente, por ejemplo `/var/lib/vatio/vatio.sqlite` |
 | `VATIO_BACKUP_DIR` | Opcional (`data/backups`) | Carpeta de respaldos; con disco persistente, una ruta dentro de él |
 | `VATIO_BACKUP_KEEP` | Opcional (`7`) | Cuántos respaldos conservar |
@@ -78,6 +80,10 @@ El firmware actual usa HTTP sin cifrar y no se ha verificado con hardware físic
 
 ## API actual
 
+En el primer ingreso con credenciales válidas, Vatio pide autorizar el tratamiento de datos y aceptar los términos vigentes. Ambas casillas empiezan desmarcadas. La cuenta conserva la prueba de aceptación y permite consultarla desde el pie de página. La política, el aviso y los términos también se pueden abrir desde el login.
+
+Para habilitar «Sugerencias / Reportar un problema», configure la URL pública HTTPS de respuesta en `VATIO_FEEDBACK_URL`. Use `VATIO_PQR_EMAIL` para el correo de PQR. Vea la [guía de configuración del Forms](docs/forms-feedback-guia.md).
+
 Las rutas `/api/*` exigen sesión (cookie `vatio_session`), salvo las indicadas. Los métodos que modifican datos exigen además la cabecera `X-CSRF-Token` con el valor devuelto al iniciar sesión.
 
 | Método y ruta | Autenticación | Descripción |
@@ -85,6 +91,8 @@ Las rutas `/api/*` exigen sesión (cookie `vatio_session`), salvo las indicadas.
 | `GET /api/health` | Ninguna | Estado del servicio y origen de datos (`simulator` o `esp32`) |
 | `POST /api/auth/login` | Ninguna (10 intentos por minuto por IP) | Inicia sesión; devuelve `username`, `role`, `csrf` y la cookie |
 | `GET /api/auth/me` | Sesión | Usuario de la sesión actual |
+| `GET /api/me/personal-data` | Sesión | Datos de cuenta, sedes, consentimientos y actividad reciente del titular |
+| `GET /api/public/contact` | Pública | URL de sugerencias y correo de PQR configurados |
 | `GET /api/info` | Sesión | URLs de red local para configurar el ESP32 |
 | `GET /api/telemetry/latest` | Sesión | Últimas lecturas por módulo (las del simulador si ningún ESP32 ha reportado) |
 | `GET /api/telemetry/history?limit=250` | Sesión | Últimas lecturas guardadas del ESP32 (máximo 1000) |
@@ -134,22 +142,20 @@ npm run check
 npm test
 ```
 
-Cubren autenticación, clave de dispositivo, CSRF, rechazo de carga crítica, persistencia de telemetría tras reiniciar, configuración por perfiles (`.env`, producción segura, cookies), la guarda de versión de Node, el dominio, los relojes, el simulador y su historial, la normalización de fabricantes, la ingestión (validación, idempotencia, búfer sin conexión), la migración de la telemetría heredada y el script de datos de demostración. No constituyen todavía una validación completa de roles, interfaz, concurrencia o seguridad.
+Cubren autenticación, clave de dispositivo, CSRF, rechazo de carga crítica, persistencia de telemetría tras reiniciar, configuración por perfiles (`.env`, producción segura, cookies), la guarda de versión de Node, el dominio, los relojes, el simulador y su historial, la normalización de fabricantes, la ingestión (validación, idempotencia, búfer sin conexión), la migración de la telemetría heredada y el script de datos de demostración. Para la cobertura y límites de pruebas, vea el [informe QA](docs/qa-informe.md).
 
 ## Limitaciones actuales
 
-- Solo existe el usuario administrador y una sede; los demás roles y la multisede están pendientes.
-- Las solicitudes de control quedan pendientes: no hay aprobación, ejecución simulada ni modo cierre implementados.
-- Varias vistas de la interfaz muestran ejemplos identificados como tales, no datos persistidos.
-- Las lecturas, módulos y cargas ya se guardan en el esquema completo (simulador y ESP32); las alertas, recomendaciones y acciones de control todavía no se usan desde la API ni la interfaz.
-- No se controla hardware físico; el firmware usa HTTP sin cifrar. No exponga el servidor a redes no confiables sin un proxy HTTPS.
-- No hay pruebas E2E ni de carga todavía.
+- La API implementa nueve roles, comparación de sedes, alertas, recomendaciones, aprobación y control simulado, incluido modo cierre. Varias pantallas de la SPA muestran ejemplos y siguen pendientes de conexión a esas rutas.
+- El ESP32 de demostración envía por HTTP. El estado seguro se valida en el modelo de control simulado.
+- E2E y carga se validaron en local. La matriz móvil automática usa emulación.
 
 ## Documentación
 
 - [`docs/00-gap-analysis.md`](docs/00-gap-analysis.md): auditoría inicial.
 - [`docs/der.md`](docs/der.md): modelo de datos, migraciones y diagrama entidad-relación.
 - [`docs/09-matriz-cumplimiento.md`](docs/09-matriz-cumplimiento.md): estado de cumplimiento por requisito.
+- [Informe QA](docs/qa-informe.md) y [borrador de Habeas Data](docs/habeas-data.md).
 - [`docs/qa.md`](docs/qa.md): QA de interfaz (`cd qa && npm test`) y plantillas de dispositivo real y usabilidad; [`docs/qa-carga.md`](docs/qa-carga.md): pruebas de carga.
 - [`.ai/HANDOFF.md`](.ai/HANDOFF.md): estado del trabajo y siguientes pasos.
 

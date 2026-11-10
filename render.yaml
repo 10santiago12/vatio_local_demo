@@ -19,3 +19,7 @@ services:
         sync: false
       - key: VATIO_DEVICE_KEY
         sync: false
+      - key: VATIO_FEEDBACK_URL
+        sync: false
+      - key: VATIO_PQR_EMAIL
+        sync: false

@@ -391,6 +391,33 @@ tr:last-child td{border-bottom:0}
 :root[data-theme="light"] .toast .icon{color:#9bdc4a}
 @keyframes toast-in{from{transform:translateY(10px);opacity:0}to{transform:translateY(0);opacity:1}}
 
+/* Sign-in, public privacy documents and contact channels */
+.login-card,.legal-card{max-width:44rem;margin:clamp(20px,6vh,64px) auto;width:calc(100% - 32px);padding:clamp(16px,4vw,32px)}
+.login-card{max-width:32rem}
+.login-card h1,.legal-card h1{margin-bottom:var(--s3)}
+.login-card .field,.legal-card h2{margin-top:var(--s4)}
+#activation-consent{margin:var(--s4) 0;padding:var(--s3);border:1px solid var(--line);border-radius:var(--r-btn)}
+#activation-consent label{display:flex;align-items:flex-start;gap:var(--s2);margin:var(--s2) 0}
+#activation-consent input{flex:none;margin-top:.25em;accent-color:var(--accent)}
+#login-error{margin:var(--s3) 0}
+.contact-footer{display:flex;flex-wrap:wrap;align-items:center;gap:var(--s3);margin-top:var(--s5);padding-top:var(--s4);border-top:1px solid var(--line)}
+.contact-footer nav{display:flex;flex-wrap:wrap;gap:var(--s2) var(--s3);font-size:.875rem}
+.contact-footer a,.legal-card a{color:var(--accent-text);text-decoration:underline}
+.feedback-slot{display:grid;justify-items:start;gap:var(--s1)}
+.feedback-slot small,.contact-footer small{color:var(--muted)}
+.sidebar-foot .feedback-slot,.sheet .feedback-slot{margin-bottom:var(--s3)}
+.feedback-link,.contact-footer .feedback-link{
+  display:inline-flex;align-items:center;min-height:44px;text-align:left;padding:var(--s2) var(--s3);
+  color:var(--accent-text);background:var(--good-bg);border:1px solid var(--line);border-radius:var(--r-btn);
+  font:inherit;font-size:.875rem;font-weight:700;text-decoration:none
+}
+.feedback-link:hover,.contact-footer .feedback-link:hover{text-decoration:underline}
+.sheet-heading{display:flex;align-items:center;justify-content:space-between;gap:var(--s2)}
+.sheet .feedback-link{color:#c6ff5a;background:rgba(198,255,90,.14);border-color:#a9c9bc}
+.sheet .feedback-slot small{color:#c4ddd2}
+.legal-card h2{font-size:1.125rem}
+.legal-card p{margin:var(--s2) 0}
+
 /* Mobile bottom nav + "more" sheet */
 .bottom-nav{
   display:none;position:fixed;left:0;right:0;bottom:0;z-index:30;

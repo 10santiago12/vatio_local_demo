@@ -6,6 +6,9 @@ Guía para quien opera Vatio. Todo lo de esta página es solo para el perfil **d
 - Cada solicitud escribe **una línea JSON** en la salida estándar: `at`, `request_id`, `method`, `path` (sin parámetros de la URL), `status`, `ms` y `role`. Nunca se registran contraseñas, cookies, tokens, claves ni cuerpos de solicitud.
 - Cada respuesta incluye el encabezado `X-Request-Id`. Si una persona reporta un problema, pídale ese valor y búsquelo en los logs (en Render, panel **Logs**) y en `GET /api/ops/errors`.
 
+- Si falta `VATIO_FEEDBACK_URL`, el servidor registra una advertencia `feedback_unconfigured` al arrancar. La interfaz indica «Canal no configurado».
+- Cada consulta exitosa de datos propios queda en `audit` como `personal_data_accessed`.
+
 ## Eventos de uso
 Se guardan en la tabla `events`: inicio de sesión correcto y fallido, cierre de sesión, alerta creada y revisada, decisión sobre una recomendación, decisión de control (ejecutada, rechazada, pendiente, descartada), descarga de reporte, exportación de datos, respaldo creado o fallido y vistas de página enviadas por la interfaz (`POST /api/events`, con lista fija de nombres y máximo 60 por minuto por usuario). Los eventos no guardan secretos.
 
@@ -18,7 +21,7 @@ Un error no controlado se guarda en `error_log` (mensaje, traza, ruta, `request_
 `GET /api/ops/metrics` devuelve tiempo activo, solicitudes por clase de estado (2xx a 5xx), latencia p50 y p95 (últimas 1000 solicitudes), tamaño de la base, sesiones activas y hora y estado del último respaldo. Los contadores viven en memoria: se reinician con el proceso.
 
 ## Respaldos
-- Se usa la copia en línea de SQLite: es consistente aunque el servidor esté escribiendo. Cada copia pasa `PRAGMA integrity_check` y tiene un archivo `.sha256` al lado.
+- Se usa la copia en línea de SQLite. Incluye datos de cuenta, actividad y pruebas de consentimiento, por lo que requiere acceso restringido. La copia es consistente aunque el servidor esté escribiendo. Cada copia pasa `PRAGMA integrity_check` y tiene un archivo `.sha256` al lado.
 - Archivos: `VATIO_BACKUP_DIR` (por defecto `data/backups`), nombre `vatio-AAAAMMDD-HHMMSSmmm.sqlite`. Se conservan los últimos `VATIO_BACKUP_KEEP` (7).
 - Programación dentro del servidor: `VATIO_BACKUP_INTERVAL_HOURS` (0 = apagada; si no se define, 0 en local y 6 en producción). Con la programación activa se crea además un respaldo al arrancar si no hay ninguno.
 - A mano: `npm run backup`, o `POST /api/ops/backups` (dueño). Lista: `GET /api/ops/backups`. Descarga: `GET /api/ops/backups/<nombre>/download`.

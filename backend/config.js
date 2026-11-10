@@ -101,10 +101,26 @@ function buildConfig(env = process.env) {
   if (!Number.isInteger(backupKeep) || backupKeep < 1 || backupKeep > 365) problems.push('VATIO_BACKUP_KEEP debe ser un entero entre 1 y 365.');
   const backupIntervalHours = env.VATIO_BACKUP_INTERVAL_HOURS === undefined || env.VATIO_BACKUP_INTERVAL_HOURS === '' ? (production ? 6 : 0) : Number(env.VATIO_BACKUP_INTERVAL_HOURS);
   if (!Number.isFinite(backupIntervalHours) || backupIntervalHours < 0 || backupIntervalHours > 720) problems.push('VATIO_BACKUP_INTERVAL_HOURS debe ser un número entre 0 y 720 (0 desactiva los respaldos programados).');
+  const feedbackValue = (env.VATIO_FEEDBACK_URL || '').trim();
+  let feedbackUrl = null;
+  if (feedbackValue) {
+    const url = URL.parse(feedbackValue);
+    if (!url || url.protocol !== 'https:' || url.username || url.password) {
+      problems.push('VATIO_FEEDBACK_URL debe ser una URL HTTPS sin credenciales.');
+    } else {
+      feedbackUrl = url.href;
+    }
+  }
+  const pqrEmail = (env.VATIO_PQR_EMAIL || '').trim() || null;
+  if (pqrEmail && !/^[a-zA-Z0-9._+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(pqrEmail)) {
+    problems.push('VATIO_PQR_EMAIL debe contener una sola dirección de correo válida.');
+  }
   if (problems.length) throw new ConfigError(problems);
 
   return Object.freeze({
     demoPanelEnabled,
+    feedbackUrl,
+    pqrEmail,
     appEnv,
     isProduction: production,
     host,

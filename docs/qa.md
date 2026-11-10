@@ -2,20 +2,20 @@
 
 Pruebas automatizadas de navegador con Playwright (`qa/`), más dos plantillas para completar con personas: dispositivos reales y pruebas de usabilidad. Las pruebas de carga están en [`qa-carga.md`](qa-carga.md).
 
-## Matriz ejecutada (4 de noviembre de 2026)
+## Matriz ejecutada el 10 de noviembre de 2026
 
-Servidor local desechable (perfil local, base temporal con la demostración sembrada, puerto 31903), sesión del administrador creada con la contraseña del entorno. Cada navegador ejecuta 7 escenarios; los 2 escenarios de barra inferior solo aplican a móvil y se omiten en escritorio.
+Servidor local desechable (perfil local, base temporal con la demostración sembrada, puerto 31903), sesión del administrador creada con la contraseña del entorno. Cada navegador registra 9 escenarios; los 2 escenarios de barra inferior solo aplican a móvil y se omiten en escritorio.
 
 | Navegador | Tipo | Aprobadas | Falladas | Omitidas |
 |---|---|---|---|---|
-| Google Chrome instalado (`channel: chrome`) | escritorio 1440x900 | 5 | 0 | 2 |
-| Microsoft Edge instalado (`channel: msedge`) | escritorio 1440x900 | 5 | 0 | 2 |
-| Chromium de Playwright | escritorio 1440x900 | 5 | 0 | 2 |
-| Firefox de Playwright | escritorio 1440x900 | 5 | 0 | 2 |
-| WebKit de Playwright | escritorio 1440x900 | 5 | 0 | 2 |
-| iPhone 13 (emulación sobre WebKit) | 390x844 | 7 | 0 | 0 |
-| Pixel 7 (emulación sobre Chromium) | 412x915 | 7 | 0 | 0 |
-| **Total** | | **39** | **0** | **10** |
+| Google Chrome instalado (`channel: chrome`) | escritorio 1440x900 | 7 | 0 | 2 |
+| Microsoft Edge instalado (`channel: msedge`) | escritorio 1440x900 | 7 | 0 | 2 |
+| Chromium de Playwright | escritorio 1440x900 | 7 | 0 | 2 |
+| Firefox de Playwright | escritorio 1440x900 | 7 | 0 | 2 |
+| WebKit de Playwright | escritorio 1440x900 | 7 | 0 | 2 |
+| iPhone 13 (emulación sobre WebKit) | 390x844 | 9 | 0 | 0 |
+| Pixel 7 (emulación sobre Chromium) | 412x915 | 9 | 0 | 0 |
+| **Total** | | **53** | **0** | **10** |
 
 Escenarios (todos en `qa/e2e/vatio.spec.js`):
 
@@ -26,10 +26,12 @@ Escenarios (todos en `qa/e2e/vatio.spec.js`):
 5. Sin desbordamiento horizontal en ninguna vista (1440x900 y móviles).
 6. Móvil: ningún elemento visible se superpone con la barra inferior al llegar al final de cada vista (se descartan los recortados por contenedores con desplazamiento y el contenido de `<details>` cerrados).
 7. Móvil: la barra inferior y la hoja "Más" cambian de vista.
+8. Activación con cuenta nueva, casillas desmarcadas, bloqueo hasta marcar ambas, regreso sin repetir el consentimiento y aviso si falta el canal de sugerencias.
+9. El enlace de sugerencias está en las 12 vistas y abre una pestaña con el formulario de prueba. El menú Más devuelve el foco al cerrar.
 
 ## Hallazgos
 
-- Ningún fallo real de la aplicación: no se modificó la interfaz.
+- La interfaz de privacidad y sugerencias se verificó en esta rama. La prueba intercepta el enlace externo para evitar envíos o dependencia de un Forms real.
 - Dos falsos positivos de las propias pruebas se corrigieron antes del resultado final: las tablas dentro de un `<details>` cerrado y las tablas con desplazamiento propio se contaban como superpuestas con la barra inferior.
 - Las capturas quedan en `qa/results/screenshots/<navegador>/<vista>.png` (carpeta ignorada por git); no sustituyen la revisión visual de una persona.
 
@@ -38,14 +40,14 @@ Escenarios (todos en `qa/e2e/vatio.spec.js`):
 - WebKit de Playwright **no es Safari real**: comparte el motor, no el navegador ni iOS.
 - Los móviles son **emulados** (tamaño de pantalla, agente de usuario y tacto), no dispositivos físicos: no cubren teclado del sistema, barra de direcciones dinámica, rendimiento real ni redes móviles.
 - Chrome y Edge se probaron en la versión instalada en el equipo de desarrollo; las versiones antiguas no se cubren.
-- Solo se probó el rol de administrador (dueño) sobre datos de demostración y un servidor local, no el servicio desplegado.
+- Las 12 vistas se recorrieron como administrador. La activación usó el rol de empleado no técnico. La ejecución se realizó en un servidor local con datos de demostración.
 - No hay evaluación formal de accesibilidad (lectores de pantalla, contraste medido).
 
 ## Cómo repetirlo
 
 ```
 cd qa
-npm install
+npm ci
 npx playwright install chromium firefox webkit
 npm test                       # toda la matriz
 npx playwright test --project=firefox   # un solo navegador

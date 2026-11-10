@@ -10,12 +10,14 @@ const root = path.join(__dirname, '..', '..');
 
 function randomSecret() { return crypto.randomBytes(18).toString('hex'); }
 
-async function startServer({ port, seed = true } = {}) {
+async function startServer({ port, seed = true, feedbackUrl = '' } = {}) {
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'vatio-qa-'));
   const env = {
     ...process.env,
     APP_ENV: 'local',
     PORT: String(port),
+    VATIO_FEEDBACK_URL: feedbackUrl,
+    VATIO_PQR_EMAIL: '',
     VATIO_DB: path.join(dir, 'qa.sqlite'),
     VATIO_ENV_FILE: path.join(dir, 'none.env'),
     VATIO_ADMIN_PASSWORD: randomSecret(),
@@ -43,10 +45,15 @@ async function startServer({ port, seed = true } = {}) {
 }
 
 async function login(baseUrl, password) {
-  const res = await fetch(`${baseUrl}/api/auth/login`, {
+  const submit = (acceptance = {}) => fetch(`${baseUrl}/api/auth/login`, {
     method: 'POST', headers: { 'content-type': 'application/json' },
-    body: JSON.stringify({ username: 'admin', password }),
+    body: JSON.stringify({ username: 'admin', password, ...acceptance }),
   });
+  let res = await submit();
+  if (res.status === 428) {
+    const { policyVersion, termsVersion } = await res.json();
+    res = await submit({ policyVersion, termsVersion, habeasDataAccepted: true, termsAccepted: true });
+  }
   if (!res.ok) throw new Error(`login failed ${res.status}`);
   const cookie = res.headers.getSetCookie().map((c) => c.split(';')[0]).join('; ');
   const { csrf } = await res.json();

@@ -1,6 +1,7 @@
 'use strict';
 const { createReferenceRepositories } = require('./reference');
 const { createMeasurementRepositories } = require('./measurement');
+const { createConsentsRepository } = require('./consents');
 const { createOperationsRepositories } = require('./operations');
 
 /**
@@ -12,7 +13,8 @@ function createRepositories(db) {
   return {
     ...createReferenceRepositories(db),
     ...createMeasurementRepositories(db),
-    ...createOperationsRepositories(db)
+    ...createOperationsRepositories(db),
+    consents: createConsentsRepository(db)
   };
 }
 

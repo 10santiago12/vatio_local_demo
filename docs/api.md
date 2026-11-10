@@ -10,9 +10,9 @@ Una prueba automática (`tests/api-docs.test.js`) comprueba que cada ruta regist
 
 **CSRF.** Toda petición que cambia datos (POST, PUT, PATCH, DELETE) debe enviar el encabezado `X-CSRF-Token` con el token del login; si falta o no coincide responde `403` (`csrf`).
 
-**Permisos.** Cada ruta exige un permiso de dominio (columna "Permiso"). Se verifica siempre en el servidor, no solo en la interfaz. Si el perfil no lo tiene responde `403` con un mensaje en español sencillo y se guarda una fila de auditoría (`permission_denied`, resultado `rejected`, con perfil, acción y motivo).
+**Permisos.** Las rutas que indican un permiso de dominio lo exigen además de la sesión. Se verifica siempre en el servidor, no solo en la interfaz. Si el perfil no lo tiene responde `403` con un mensaje en español sencillo y se guarda una fila de auditoría (`permission_denied`, resultado `rejected`, con perfil, acción y motivo).
 
-**Errores.** Forma: `{ "error": "mensaje en español", "code": "codigo_corto" }`. Códigos HTTP usados: `400` entrada inválida, `401` sin sesión, `403` sin permiso o CSRF, `404` no existe, `405` método no permitido, `409` conflicto de estado, `413` cuerpo mayor a 2 MB, `422` regla de negocio (por ejemplo, equipo crítico), `429` demasiados intentos de login, `500` error inesperado (se registra en el log de errores).
+**Errores.** Forma: `{ "error": "mensaje en español", "code": "codigo_corto" }`. Códigos HTTP usados: `400` entrada inválida, `401` sin sesión, `403` sin permiso o CSRF, `404` no existe, `405` método no permitido, `409` conflicto de estado, `413` cuerpo mayor a 2 MB, `422` regla de negocio (por ejemplo, equipo crítico), `428` activación pendiente, `429` demasiados intentos de login, `500` error inesperado (se registra en el log de errores).
 
 **Fechas y números.** Instantes en ISO 8601 UTC; días como `AAAA-MM-DD` en hora de Bogotá; potencia en W, energía en kWh, dinero en COP (enteros).
 
@@ -39,9 +39,9 @@ Además, `view_technical_data`, `approve_action`, `toggle_load`, `decide_recomme
 ## Sesión
 
 ### `POST /api/auth/login`  (público)
-- **Entrada:** `{ "username": "demo-owner", "password": "..." }`.
+- **Entrada:** `{ "username": "demo-owner", "password": "..." }`. Si devuelve `428 consent_required`, muestra los documentos y solicita las dos aceptaciones independientes. Reenvía las credenciales con `habeasDataAccepted: true`, `termsAccepted: true` y `policyVersion` y `termsVersion` del `428`.
 - **Salida 200:** `{ username, role (nombre), roleCode, displayName, permissions: [..], csrf }` y la cookie de sesión.
-- **Errores:** `401 invalid_credentials` (también si el usuario está desactivado; se audita `login_failed`), `429 too_many_attempts` (más de 10 intentos por minuto desde una dirección), `400`.
+- **Errores:** `401 invalid_credentials` (también si el usuario está desactivado; se audita `login_failed`), `428 consent_required` (credenciales válidas y falta consentimiento vigente; incluye ambas versiones y no crea sesión), `429 too_many_attempts` (más de 10 intentos por minuto desde la IP del par TCP), `400`.
 
 ### `GET /api/auth/me`  (cualquier sesión)
 - **Salida 200:** igual que el login: perfil, nombre para mostrar y lista de permisos.
@@ -49,6 +49,20 @@ Además, `view_technical_data`, `approve_action`, `toggle_load`, `decide_recomme
 
 ### `POST /api/auth/logout`  (cualquier sesión)
 - **Salida 200:** `{ ok: true }` y cookie vencida. Se audita `logout`.
+
+---
+
+## Privacidad y contacto
+
+### `GET /api/public/contact`  (público)
+- **Salida 200:** `{ feedbackUrl, pqrEmail }`. Cada valor es una cadena configurada o `null`. La interfaz usa el primero como enlace HTTPS y el segundo como enlace de correo.
+
+### `GET /api/me/personal-data`  (cualquier sesión)
+- **Salida 200:** `{ account, consents, sites, activity: { audit, events } }`. Incluye perfil, fechas de cuenta, vínculos a sedes, pruebas de autorización y resúmenes de hasta 100 registros recientes por fuente. Los detalles internos y las propiedades de analítica se excluyen del resumen. La respuesta usa `Cache-Control: no-store`. Se registra `personal_data_accessed` en auditoría.
+- El titular se obtiene exclusivamente de la sesión. La ruta no recibe un identificador de otro usuario ni expone hashes, sales o credenciales. Se puede solicitar información de otros registros propios por PQR.
+- **Errores:** `401` sin sesión.
+
+Las tres páginas públicas se sirven desde `/politica-de-tratamiento.html`, `/aviso-de-privacidad.html` y `/terminos-y-condiciones.html`.
 
 ---
 
