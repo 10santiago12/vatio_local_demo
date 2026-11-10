@@ -57,3 +57,9 @@ Con `autoDeploy: true`, cada `push` a la rama configurada redespliega. Para volv
 ## Actualización del 10 de noviembre
 
 El formulario de borrador se publicó en Google Forms. El enlace público de respuesta es https://docs.google.com/forms/d/e/1FAIpQLSdE0YHreDJoHdrcJX-PrvWy9xi7G6BLfXf5Io0jRO9HgJXF8A/viewform?usp=publish-editor. La hoja de respuestas se vinculó y se activaron notificaciones a la cuenta creadora. La identidad del responsable, la política y el correo PQR están [POR CONFIRMAR]. La rama publicada requiere revisión y despliegue antes de usar este enlace en el servicio remoto.
+
+## Correo SMTP de prueba
+
+Configure en el entorno `VATIO_SMTP_HOST`, `VATIO_SMTP_PORT`, `VATIO_SMTP_USER`, `VATIO_SMTP_PASSWORD`, `VATIO_SMTP_FROM` y `VATIO_SMTP_TO`. La integración está desactivada si no se configuran. Si se configura parcialmente, el servidor rechaza el arranque. Se admiten 465 con TLS directo y 587 con STARTTLS obligatorio. No se registran credenciales ni direcciones en la auditoría.
+
+Con una sesión del dueño, use Configuración → Enviar correo de prueba o `POST /api/ops/email/test` con CSRF. El mensaje se envía exclusivamente al destinatario configurado. La respuesta satisfactoria indica que SMTP aceptó el mensaje. Confirme la recepción en la bandeja. Proveedor seleccionado: Brevo SMTP (`smtp-relay.brevo.com`, puerto 587 con STARTTLS). El equipo debe crear su cuenta, autenticar un dominio/remitente y generar una clave SMTP (no una API key). El acceso requiere además el usuario SMTP y un destinatario definidos por el equipo. No hay envío automático de alertas.

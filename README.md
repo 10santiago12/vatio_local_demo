@@ -1,18 +1,18 @@
 # VATIO - gestión energética para PyMEs (prototipo)
 
-Vatio mide el consumo por equipo, lo traduce a pesos (COP), detecta anomalías y propone ahorros, con control de cargas siempre sujeto a aprobación humana y a reglas de criticidad. Este repositorio contiene el servidor Node.js (sin dependencias npm), la interfaz web, el firmware de un ESP32 que simula ocho medidores y la documentación técnica.
+Vatio mide el consumo por equipo, lo traduce a pesos (COP), detecta anomalías y propone ahorros, con control de cargas siempre sujeto a aprobación humana y a reglas de criticidad. Este repositorio contiene el servidor Node.js (Nodemailer para SMTP saliente), la interfaz web, el firmware de un ESP32 que simula ocho medidores y la documentación técnica.
 
 **Estado:** prototipo en desarrollo, no apto para operación real. Consulte [Limitaciones actuales](#limitaciones-actuales) y la matriz en [`docs/09-matriz-cumplimiento.md`](docs/09-matriz-cumplimiento.md).
 
 ## Requisitos
 
 - Node.js 24 o superior (versión fijada en `.nvmrc` y `engines`). El servidor usa `node:sqlite`, que no existe en Node 20/22; con una versión anterior el inicio se detiene con un mensaje claro.
-- Sin paquetes npm de ejecución: no hace falta `npm install`.
+- Nodemailer para el envío SMTP. Ejecute `npm ci` antes del primer inicio.
 - Para el ESP32: Arduino IDE con el core de ESP32; PC y ESP32 en la misma red Wi-Fi.
 
 ## Ejecución local
 
-1. Copie `.env.example` como `.env` y complete `VATIO_ADMIN_PASSWORD` (mínimo 16 caracteres) y `VATIO_DEVICE_KEY`. El servidor carga `.env` solo; las variables ya definidas en el sistema tienen prioridad.
+1. Ejecute `npm ci`. Copie `.env.example` como `.env` y complete `VATIO_ADMIN_PASSWORD` (mínimo 16 caracteres) y `VATIO_DEVICE_KEY`. El servidor carga `.env` solo; las variables ya definidas en el sistema tienen prioridad.
 2. Inicie:
    - Windows: doble clic en `start_windows.bat` (verifica Node 24 y avisa si falta `.env`).
    - Terminal: `npm start`.
@@ -82,7 +82,9 @@ El firmware actual usa HTTP sin cifrar y no se ha verificado con hardware físic
 
 En el primer ingreso con credenciales válidas, Vatio pide autorizar el tratamiento de datos y aceptar los términos vigentes. Ambas casillas empiezan desmarcadas. La cuenta conserva la prueba de aceptación y permite consultarla desde el pie de página. La política, el aviso y los términos también se pueden abrir desde el login.
 
-Para habilitar «Sugerencias / Reportar un problema», configure la URL pública HTTPS de respuesta en `VATIO_FEEDBACK_URL`. Use `VATIO_PQR_EMAIL` para el correo de PQR. Vea la [guía de configuración del Forms](docs/forms-feedback-guia.md).
+El dueño puede enviar un correo de prueba desde Configuración tras definir `VATIO_SMTP_HOST`, `VATIO_SMTP_PORT`, `VATIO_SMTP_USER`, `VATIO_SMTP_PASSWORD`, `VATIO_SMTP_FROM` y `VATIO_SMTP_TO`. Use el puerto 465 para TLS directo o 587 para STARTTLS. No incluya credenciales en el repositorio. La aceptación SMTP no demuestra entrega final y El proveedor seleccionado es Brevo SMTP (host `smtp-relay.brevo.com`, puerto 587 con STARTTLS); faltan crear la cuenta del equipo, autenticar un remitente, cargar su usuario/clave SMTP y confirmar el destinatario. No hay notificaciones automáticas.
+
+Para habilitar «Sugerencias / Reportar un problema», configure la URL pública HTTPS de respuesta en `VATIO_FEEDBACK_URL`. Use `VATIO_PQR_EMAIL` para el correo de PQR. El enlace del Forms creado en una cuenta personal requiere traslado y revisión institucional antes de recolectar datos. Vea la [guía de configuración del Forms](docs/forms-feedback-guia.md).
 
 Las rutas `/api/*` exigen sesión (cookie `vatio_session`), salvo las indicadas. Los métodos que modifican datos exigen además la cabecera `X-CSRF-Token` con el valor devuelto al iniciar sesión.
 
@@ -146,7 +148,7 @@ Cubren autenticación, clave de dispositivo, CSRF, rechazo de carga crítica, pe
 
 ## Limitaciones actuales
 
-- La API implementa nueve roles, comparación de sedes, alertas, recomendaciones, aprobación y control simulado, incluido modo cierre. Varias pantallas de la SPA muestran ejemplos y siguen pendientes de conexión a esas rutas.
+- La API implementa nueve roles, comparación de sedes, alertas, recomendaciones, aprobación y control simulado. Las vistas de alertas, recomendaciones y control usan datos de la API. El inicio y otras pantallas conservan ejemplos y están pendientes de conexión.
 - El ESP32 de demostración envía por HTTP. El estado seguro se valida en el modelo de control simulado.
 - E2E y carga se validaron en local. La matriz móvil automática usa emulación.
 

@@ -115,9 +115,33 @@ function buildConfig(env = process.env) {
   if (pqrEmail && !/^[a-zA-Z0-9._+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(pqrEmail)) {
     problems.push('VATIO_PQR_EMAIL debe contener una sola dirección de correo válida.');
   }
+  // SMTP remains disabled unless every field is configured.
+  const smtp = {
+    host: (env.VATIO_SMTP_HOST || '').trim(),
+    port: Number(env.VATIO_SMTP_PORT || 587),
+    user: (env.VATIO_SMTP_USER || '').trim(),
+    password: env.VATIO_SMTP_PASSWORD || '',
+    from: (env.VATIO_SMTP_FROM || '').trim(),
+    to: (env.VATIO_SMTP_TO || '').trim(),
+  };
+  const smtpEnabled = Boolean(smtp.host || smtp.user || smtp.password || smtp.from || smtp.to);
+  if (smtpEnabled) {
+    if (!smtp.host || !smtp.user || !smtp.password || !smtp.from || !smtp.to) {
+      problems.push('Configure todas las variables VATIO_SMTP para habilitar correo.');
+    }
+    if (!Number.isInteger(smtp.port) || ![465, 587].includes(smtp.port)) {
+      problems.push('VATIO_SMTP_PORT debe ser 465 o 587.');
+    }
+    const address = /^[a-zA-Z0-9._+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+    if (!address.test(smtp.from) || !address.test(smtp.to)) {
+      problems.push('VATIO_SMTP_FROM y VATIO_SMTP_TO deben ser direcciones de correo válidas.');
+    }
+    if (!/^[a-zA-Z0-9.-]+$/.test(smtp.host)) problems.push('VATIO_SMTP_HOST debe ser un nombre de servidor válido.');
+  }
   if (problems.length) throw new ConfigError(problems);
 
   return Object.freeze({
+    smtp: smtpEnabled ? Object.freeze(smtp) : null,
     demoPanelEnabled,
     feedbackUrl,
     pqrEmail,

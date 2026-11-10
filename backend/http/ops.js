@@ -9,6 +9,13 @@ function register(router, app) {
     doc: 'Registra un evento de uso de la interfaz (page_view, report_view, help_opened) con la página opcional; máximo 60 por minuto por usuario.',
   });
 
+  router.get('/api/ops/email', () => json(200, { configured: app.email.configured() }), {
+    permission: 'view_ops', doc: 'Indica si el correo SMTP está configurado, sin exponer credenciales.',
+  });
+  router.post('/api/ops/email/test', async ({ user }) => json(200, await app.email.sendTest(user)), {
+    permission: 'view_ops', doc: 'Envía un mensaje de prueba al destinatario SMTP configurado.',
+  });
+
   router.get('/api/ops/events', ({ query }) => json(200, app.ops.events(query)), {
     permission: 'view_ops', doc: 'Eventos de uso recientes. Filtros: name, from, to, limit.',
   });

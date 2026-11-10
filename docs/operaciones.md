@@ -39,3 +39,9 @@ El disco es **efímero**: en cada redespliegue o reinicio se pierden la base y t
 5. Inicie el servidor y compruebe `/api/health` e inicie sesión. Si algo salió mal, devuelva `<base>.before-restore` a su nombre original.
 
 En el plan gratuito sin shell, la restauración se hace en el arranque de un servicio con disco: lo práctico es restaurar localmente, comprobar los datos y volver a sembrar la demo en Render.
+
+## Correo de prueba
+
+El dueño puede comprobar el SMTP configurado desde Configuración. Se auditan `email_test_sent` y `email_test_failed` sin registrar credenciales ni destinatarios. La aceptación por SMTP no prueba la llegada al buzón. Véase `docs/despliegue.md`.
+
+Proveedor seleccionado para la primera configuración: Brevo SMTP, host `smtp-relay.brevo.com`, puerto 587 con STARTTLS. Use el usuario y la clave SMTP de la cuenta (no la API key) y un remitente autenticado. La activación y prueba requieren una cuenta del equipo, dominio/remitente verificado y dirección destinataria. Referencia: https://developers.brevo.com/docs/smtp-integration.

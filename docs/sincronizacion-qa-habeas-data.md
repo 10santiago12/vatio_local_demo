@@ -13,3 +13,10 @@ Para presentar: «Añadimos un acceso de sugerencias y reporte de problemas en l
 ## Actualización del 10 de noviembre
 
 El formulario de borrador se publicó en Google Forms. El enlace público de respuesta es https://docs.google.com/forms/d/e/1FAIpQLSdE0YHreDJoHdrcJX-PrvWy9xi7G6BLfXf5Io0jRO9HgJXF8A/viewform?usp=publish-editor. La hoja de respuestas se vinculó y se activaron notificaciones a la cuenta creadora. La identidad del responsable, la política y el correo PQR están [POR CONFIRMAR]. La rama publicada requiere revisión y despliegue antes de usar este enlace en el servicio remoto.
+
+## Avance posterior
+
+| Cambio | Documentos actualizados |
+|---|---|
+| Vistas de alertas, recomendaciones y control conectadas a la API | README, matriz, arquitectura, informe QA y carpeta de entrega. |
+| Prueba de correo SMTP para el dueño | README, API, despliegue, operaciones, matriz, carpeta de entrega y ejemplo de entorno. |

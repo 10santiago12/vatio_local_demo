@@ -327,6 +327,14 @@ Doble protección: permiso `view_demo_panel` y bandera del entorno. Está habili
 - **Errores:** `400 invalid_event`, `401`, `429 rate_limited` (más de 60 eventos por minuto por usuario).
 - El resto de eventos (inicio y cierre de sesión, alertas, decisiones, descargas, respaldos) los registra el servidor solo.
 
+### `GET /api/ops/email` · permiso `view_ops`
+- **Salida:** `{ configured: boolean }`. Nunca expone credenciales ni direcciones.
+
+### `POST /api/ops/email/test` · permiso `view_ops`
+- Envía un mensaje fijo al destinatario configurado, con CSRF obligatorio, y audita el resultado.
+- **Salida 200:** `{ ok: true }` cuando el servidor SMTP acepta el mensaje. La entrega a la bandeja no se garantiza.
+- **Errores:** `503 email_unconfigured`, `502 email_failed`.
+
 ### `GET /api/ops/events`  · `view_ops`
 - **Filtros (query):** `name`, `from`, `to` (AAAA-MM-DD, el día final se incluye, o fecha ISO), `limit` (1-500, por defecto 100).
 - **Salida:** `{ count, events: [{ id, at, name, userId, properties }] }`, de lo más nuevo a lo más antiguo. Nombres: `login_ok`, `login_failed`, `logout`, `alert_created`, `alert_reviewed`, `recommendation_decision`, `control_decision`, `report_downloaded`, `data_exported`, `backup_created`, `backup_failed`, `page_view`, `report_view`, `help_opened`.

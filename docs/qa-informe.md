@@ -8,7 +8,7 @@ La verificación cubrió el repositorio `vatio_local_demo`, con base `ca5f6b6` d
 
 | Comando | Resultado observado |
 |---|---|
-| `npm test` | 310 casos registrados, 307 aprobados, 0 fallidos y 3 omitidos porque el entorno carece de `pdftotext`. |
+| `npm test` | 314 casos registrados, 311 aprobados, 0 fallidos y 3 omitidos porque el entorno carece de `pdftotext`. |
 | `npm run check` | 139 de 139 archivos JS válidos sintácticamente. |
 | `npm ci --prefix qa` | Instaló las dependencias de QA del archivo de bloqueo. |
 | `npm exec --prefix qa -- playwright install chromium firefox webkit` | Motores para la matriz automatizada. Chrome y Edge instalados se detectan automáticamente. |
@@ -51,11 +51,15 @@ Las pruebas midieron un único equipo en `127.0.0.1`, sin red IoT física. En Re
 
 ## 5 Cobertura real del MVP
 
-- **Línea base y recomendaciones.** El backend calcula la línea base con lecturas persistidas (`backend/app/analytics.js:58`) y genera y almacena recomendaciones con API de decisión (`backend/app/recommendations.js:45`, `backend/http/operations.js:21`). La SPA conserva datos de ejemplo para esas pantallas (`public/app.js:49` y `public/app.js:566`).
+- **Línea base y recomendaciones.** El backend calcula la línea base con lecturas persistidas (`backend/app/analytics.js:58`) y genera y almacena recomendaciones con API de decisión (`backend/app/recommendations.js:45`, `backend/http/operations.js:21`). Las vistas de alertas y recomendaciones consumen la API y permiten revisar o decidir según los permisos. Algunas tarjetas del inicio aún muestran ejemplos.
 - **Curvas.** El panel de inicio usa telemetría de `/api/telemetry/latest` y un historial local de la sesión (`public/app.js:408` y `public/app.js:858`). Las curvas semanales de ahorro y reportes son ejemplos en la SPA (`public/app.js:622` y `public/app.js:662`). La API ofrece series y reportes calculados.
-- **Control y roles.** La API implementa nueve roles, aprobación, control simulado y modo cierre. La SPA mezcla llamadas reales, como el rechazo de apagar la carga crítica, con interacciones demostrativas. El estado seguro probado es de software.
+- **Control y roles.** La API implementa nueve roles, aprobación, control simulado y modo cierre. La vista Control consulta las aprobaciones y presenta la vista previa del cierre simulado. Otras vistas conservan interacciones demostrativas. El estado seguro probado es de software.
 - **Privacidad y soporte.** La activación y la consulta autenticada se prueban de extremo a extremo o por API según el caso. El Forms se publicó posteriormente como borrador. Responsable y política están por confirmar.
 
 ## Actualización del 10 de noviembre
 
 El formulario de borrador se publicó en Google Forms. El enlace público de respuesta es https://docs.google.com/forms/d/e/1FAIpQLSdE0YHreDJoHdrcJX-PrvWy9xi7G6BLfXf5Io0jRO9HgJXF8A/viewform?usp=publish-editor. La hoja de respuestas se vinculó y se activaron notificaciones a la cuenta creadora. La identidad del responsable, la política y el correo PQR están [POR CONFIRMAR]. La rama publicada requiere revisión y despliegue antes de usar este enlace en el servicio remoto.
+
+## Avance de la rama de integración
+
+El 10 de noviembre se verificaron 311 pruebas aprobadas, 3 omitidas por ausencia de pdftotext y 0 fallidas. La matriz Chromium ejecutó 9 casos con éxito y omitió 2 exclusivos de móvil. Incluye la persistencia de una decisión de recomendación y la vista previa del cierre. Se añadieron pruebas de configuración SMTP, TLS, rechazo del servidor y permisos. No se realizó un envío a un proveedor real.

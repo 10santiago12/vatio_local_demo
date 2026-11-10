@@ -38,8 +38,8 @@ const state = {
   investment: Number(localStorage.getItem("vatio_investment") || 1800000),
   role: "",
   csrf: "",
-  accepted: new Set(),
-  reviewedAlerts: new Set(),
+  permissions: [],
+  apiViews: {},
   moreOpen: new URLSearchParams(location.search).get("more") === "1",
   animate: true,
   // Rolling buffer of real readings received by the browser (about 4 minutes).
@@ -373,7 +373,7 @@ function mountShell(){
     <div class="app-shell">
       <aside class="sidebar" id="sidebar"></aside>
       <main class="main">
-        <div class="card tint-warn" role="status">Prototipo en desarrollo: alertas, recomendaciones, ahorro y control incluyen ejemplos no persistentes. No se ejecutan órdenes físicas.</div>
+        <div class="card tint-warn" role="status">Prototipo en desarrollo: algunas vistas incluyen ejemplos. El control es simulado y no ejecuta órdenes físicas.</div>
         <div class="mobile-brand"><span class="logo">${icon("zap")}</span><span class="brand-name">Vatio</span><span class="site-name muted">Panadería La Espiga · Chía</span></div>
         <header class="header" id="header"></header>
         <div class="content" id="content"></div>
@@ -530,89 +530,72 @@ function buildAlerts(){
       if(hour>=20 || hour<6) alerts.push({id:"sign-offhours",kind:"critical",type:"Fuera de horario",load:r.load_name,detail:"Carga no esencial energizada con el local cerrado."});
     }
   }
-  return alerts.filter(a=>!state.reviewedAlerts.has(a.id));
+  return alerts;
 }
 
 function viewAlertas(){
-  const alerts = buildAlerts();
-  const trend = [42,46,45,51,54,58,61,67,70,72,78,80];
-  const trendCfg = {
-    aria:"Tendencia de mantenimiento del congelador en 12 semanas", xName:"Semana",
-    labels: trend.map((_,i)=>String(i+1)), tipLabel:i=>`Semana ${i+1}`,
-    series:[{name:"Índice de desgaste", data:trend, color:"--chart-3", area:true}],
-    fmt:v=>num(v,0), axisFmt:v=>num(v,0), yMax:100, ySize:40, maxTicks:6
-  };
+  const data = state.apiViews.Alertas;
+  if(!data) return layout('<div class="card">Cargando alertas…</div>');
+  if(data.error) return layout(`<div class="card" role="alert">${escapeHtml(data.error)}</div>`);
   return layout(`
-    <div class="toolbar">${pill(`Activas · ${alerts.length}`,"good","bell")}${pill("Actualización automática","neutral","refresh-cw")}</div>
+    <div class="toolbar">${pill(`Activas · ${data.alerts.length}`,"info","bell")}</div>
     <div class="alert-grid">
-      ${alerts.map(a=>{
-        const maint = a.kind==="maintenance";
-        return `<article class="card alert-card ${maint?"tint-info":"tint-bad"}">
-        <span class="chip ${maint?"info":"bad"}">${icon(maint?"wrench":"triangle-alert")}</span>
-        ${pill(a.type, maint?"info":"bad")}
-        <h3>${escapeHtml(a.load)}</h3>
-        <p class="small muted">${escapeHtml(a.detail)}</p>
-        <span class="small muted">Reconocimiento persistente pendiente de implementación</span>
-      </article>`;}).join("") || `<div class="card empty" style="grid-column:1/-1"><span class="chip">${icon("circle-check","lg")}</span><strong>Todo en orden</strong><span>No hay alertas activas con las lecturas actuales.</span></div>`}
+      ${data.alerts.map(a=>`<article class="card alert-card">
+        ${pill(a.type,"warn")}<h3>${escapeHtml(a.loadName || "Equipo")}</h3>
+        <p class="small muted">${escapeHtml(a.message)}</p>
+        ${state.permissions.includes("review_alert") ? `<button class="btn" data-review-alert="${a.id}">Marcar como revisada</button>` : ""}
+      </article>`).join("") || '<div class="card empty">No hay alertas activas.</div>'}
     </div>
-    <div class="gap"></div>
-    <section class="card">
-      ${cardHead("wrench","Tendencia de mantenimiento · Congelador","Representación visual del escenario del prototipo.","warn")}
-      ${chartBlock(trendCfg, 240)}
-    </section>
   `);
 }
 
-const recommendations = [
-  {id:"sign",score:92,load:"Letrero luminoso",action:"Programar apagado automático al cierre",saving:14400,confidence:"Alta",icon:"lightbulb"},
-  {id:"coffee",score:78,load:"Cafetera industrial",action:"Reducir standby fuera de horario",saving:11800,confidence:"Alta",icon:"zap"},
-  {id:"freezer",score:64,load:"Congelador vertical",action:"Revisar equipo por aumento sostenido",saving:7800,confidence:"Media",icon:"snowflake"},
-  {id:"ac",score:51,load:"Aire acondicionado",action:"Programar apagado a las 20:15",saving:6100,confidence:"Media",icon:"clock"}
-];
-
 function viewRecomendaciones(){
-  return layout(`
-    <section class="stack">
-      ${recommendations.map(r=>{
-        const done = state.accepted.has(r.id);
-        return `
-        <article class="card recommendation">
-          ${gauge(r.score,{cls:"score", text:String(r.score), label:`Puntaje ${r.score} de 100`})}
-          <div class="rec-body"><h3>${escapeHtml(r.load)} · ${escapeHtml(r.action)}</h3>
-            <div class="rec-saving">${money(r.saving)}<span class="small muted" style="font-weight:600"> /mes</span></div>
-            <div class="rec-meta">${pill(`Confianza ${r.confidence}`, r.confidence==="Alta"?"good":"info")}
-              <span class="small muted">Puntaje = ahorro normalizado × criticidad × confianza</span></div>
-          </div>
-          <div class="actions">
-            <span class="small muted">Ejemplo: decisiones persistentes pendientes</span>
-          </div>
-        </article>`;}).join("")}
-    </section>
-  `);
+  const data = state.apiViews.Recomendaciones;
+  if(!data) return layout('<div class="card">Cargando recomendaciones…</div>');
+  if(data.error) return layout(`<div class="card" role="alert">${escapeHtml(data.error)}</div>`);
+  return layout(`<section class="stack">
+    ${data.recommendations.map(r=>`<article class="card recommendation">
+      ${gauge(r.score,{cls:"score",text:String(r.score),label:`Puntaje ${r.score} de 100`})}
+      <div class="rec-body"><h3>${escapeHtml(r.title)}</h3>
+        <p>${escapeHtml(r.description || r.assumption || "")}</p>
+        <div class="rec-saving">${money(r.monthlySavingsCop)}<span class="small muted"> /mes estimado</span></div>
+      </div>
+      ${state.permissions.includes("decide_recommendation") ? `<div class="actions">
+        <button class="btn primary" data-recommendation="${r.id}" data-decision="accept">Aceptar</button>
+        <button class="btn" data-recommendation="${r.id}" data-decision="postpone">Posponer</button>
+        <button class="btn" data-recommendation="${r.id}" data-decision="discard">Descartar</button>
+      </div>` : ""}
+    </article>`).join("") || '<div class="card empty">No hay recomendaciones pendientes.</div>'}
+  </section>`);
 }
 
 function viewControl(){
-  const pending = recommendations.filter(r=>state.accepted.has(r.id));
+  const data = state.apiViews.Control;
+  if(!data) return layout('<div class="card">Cargando control…</div>');
+  if(data.error) return layout(`<div class="card" role="alert">${escapeHtml(data.error)}</div>`);
+  const approvals = data.approvals || [];
+  const closing = data.closing;
   return layout(`
-    <section class="card tint-good">
-      ${cardHead("shield-check","Control en desarrollo","Esta pantalla es ilustrativa. No ejecuta ni aprueba órdenes. El servidor rechaza solicitudes sobre cargas críticas.")}
-    </section>
-    <h2 class="section-title">Acciones pendientes de aprobación</h2>
-    <div class="table-wrap"><table>
-      <thead><tr><th>Acción</th><th>Carga</th><th>Ahorro</th><th>Estado</th><th><span class="sr-only">Acciones</span></th></tr></thead>
-      <tbody>
-      ${pending.map(r=>`<tr><td>${escapeHtml(r.action)}</td><td>${escapeHtml(r.load)}</td><td>${money(r.saving)}/mes</td><td>${pill("Pendiente","warn","hourglass")}</td>
-        <td><button class="btn primary" data-approve="${r.id}">${icon("check","sm")}Aprobar</button></td></tr>`).join("") ||
-        `<tr><td colspan="5" class="muted">Acepta una recomendación para crear una acción pendiente.</td></tr>`}
-      <tr><td>Apagar</td><td>Congelador vertical</td><td>—</td><td>${pill("Ejemplo · crítica","bad","circle-x")}</td><td></td></tr>
-      </tbody>
-    </table></div>
-    <div class="gap"></div>
-    <section class="card">
-      ${cardHead("file-text","Auditoría")}
-      <div class="kpi-line"><span>Intentar apagar congelador</span><strong style="color:var(--bad)">Rechazada · carga crítica</strong></div>
-      <div class="kpi-line"><span>Telemetría de módulos</span><strong>${state.telemetry?.source==="esp32"?"Hardware ESP32":"Simulador"}</strong></div>
-    </section>
+    <section class="card tint-info">${cardHead("shield-check","Control simulado",
+      "Las acciones se evalúan y registran en el servidor. No se controlan equipos físicos.")}</section>
+    ${state.permissions.includes("approve_action") ? `
+      <h2 class="section-title">Acciones pendientes de aprobación</h2>
+      <div class="table-wrap"><table><thead><tr><th>Acción</th><th>Equipo</th><th>Motivo</th><th>Decisión</th></tr></thead>
+      <tbody>${approvals.map(a=>`<tr><td>${a.action === "off" ? "Apagar" : "Encender"}</td>
+        <td>${escapeHtml(a.loadName)}</td><td>${escapeHtml(a.reason || "")}</td>
+        <td><button class="btn primary" data-control-id="${a.id}" data-control-action="approve">Aprobar</button>
+        <button class="btn" data-control-id="${a.id}" data-control-action="reject">Rechazar</button></td></tr>`).join("") ||
+          '<tr><td colspan="4">No hay acciones pendientes.</td></tr>'}
+      </tbody></table></div>` : ""}
+    ${closing ? `<div class="gap"></div><section class="card"><h2>Modo cierre simulado</h2>
+      <p>${escapeHtml(closing.estimatedNightlySavings.text)}</p>
+      <h3>Equipos que se apagarían</h3>
+      <ul>${closing.willSwitchOff.map(x=>`<li>${escapeHtml(x.name || x.loadName || x.loadId)}</li>`).join("") || "<li>Ninguno</li>"}</ul>
+      <h3>Equipos que permanecen encendidos</h3>
+      <ul>${closing.staysOn.map(x=>`<li>${escapeHtml(x.name || x.loadName || x.loadId)} · ${escapeHtml(x.reason || "")}</li>`).join("") || "<li>Ninguno</li>"}</ul>
+      <button class="btn primary" data-action="confirm-closing">Confirmar modo cierre simulado</button>
+    </section>` : ""}
+    ${!closing && !state.permissions.includes("approve_action") ? '<div class="card">Tu perfil no tiene acciones de control disponibles.</div>' : ""}
   `);
 }
 
@@ -749,6 +732,10 @@ function viewConfiguracion(){
         <div class="kpi-line"><span>Fuente actual</span><strong>${state.telemetry?.source==="esp32"?"ESP32":"Simulador"}</strong></div>
       </section>
     </div>
+    ${state.permissions.includes("view_ops") ? `<div class="gap"></div><section class="card">
+      ${cardHead("mail","Correo electrónico","Prueba de envío al destinatario configurado por el administrador.")}
+      <button class="btn" data-action="test-email">Enviar correo de prueba</button>
+    </section>` : ""}
   `);
 }
 
@@ -814,12 +801,62 @@ function render(opts={}){
   state.animate = false;
 }
 
+async function loadOperationalView(view){
+  const routes = { Alertas: "/api/alerts?view=active", Recomendaciones: "/api/recommendations" };
+  if(view === "Control"){
+    try {
+      const endpoints = [];
+      if(state.permissions.includes("approve_action")) endpoints.push(["approvals", "/api/control/approvals"]);
+      if(state.permissions.includes("activate_closing_mode")) endpoints.push(["closing", "/api/control/closing-mode"]);
+      const results = await Promise.all(endpoints.map(async ([key, url]) => {
+        const response = await fetch(url, {cache:"no-store"});
+        if(response.status === 401){ endSession(); throw new Error("session"); }
+        const body = await response.json();
+        if(!response.ok) throw new Error(body.error || "No fue posible cargar el control.");
+        return [key, key === "approvals" ? body.approvals : body];
+      }));
+      state.apiViews.Control = Object.fromEntries(results);
+    } catch(error) {
+      state.apiViews.Control = {error:error.message === "session" ? "Sesión finalizada." : error.message || "No se pudo conectar con el servidor."};
+    }
+    if(state.view === view) render({force:true});
+    return;
+  }
+  if(!routes[view]) return;
+  try {
+    const response = await fetch(routes[view], {cache:"no-store"});
+    const body = await response.json();
+    if(response.status === 401){ endSession(); return; }
+    state.apiViews[view] = response.ok ? body : {error: body.error || "No fue posible cargar esta vista."};
+  } catch {
+    state.apiViews[view] = {error:"No se pudo conectar con el servidor."};
+  }
+  if(state.view === view) render({force:true});
+}
+
+async function submitOperationalAction(url, body, view){
+  try {
+    const response = await fetch(url, {
+      method:"POST", headers:{"content-type":"application/json","x-csrf-token":state.csrf},
+      body: JSON.stringify(body),
+    });
+    const result = await response.json();
+    if(response.status === 401){ endSession(); return; }
+    if(!response.ok){ toast(result.error || "No fue posible guardar el cambio."); return; }
+    toast("Cambio guardado.");
+    await loadOperationalView(view);
+  } catch {
+    toast("No se pudo conectar con el servidor.");
+  }
+}
+
 function setView(view){
   state.view = view;
   state.moreOpen = false;
   state.animate = true;
   render({force:true});
   window.scrollTo(0,0);
+  loadOperationalView(view);
 }
 
 function applyTheme(theme){
@@ -897,14 +934,32 @@ document.addEventListener("click", async (event)=>{
   const viewBtn = event.target.closest("[data-view]");
   if(viewBtn){ setView(viewBtn.dataset.view); return; }
 
-  const accept = event.target.closest("[data-accept]");
-  if(accept){ state.accepted.add(accept.dataset.accept); toast("Recomendación aceptada: acción pendiente creada."); render({force:true}); return; }
+  const controlAction = event.target.closest("[data-control-id]");
+  if(controlAction){
+    controlAction.disabled = true;
+    const id = encodeURIComponent(controlAction.dataset.controlId);
+    const action = controlAction.dataset.controlAction;
+    await submitOperationalAction(`/api/control/approvals/${id}/${action}`, {}, "Control");
+    controlAction.disabled = false;
+    return;
+  }
 
-  const approve = event.target.closest("[data-approve]");
-  if(approve){ toast("Acción aprobada para la demostración. No se controla hardware real."); return; }
+  const decision = event.target.closest("[data-recommendation]");
+  if(decision){
+    decision.disabled = true;
+    await submitOperationalAction(`/api/recommendations/${encodeURIComponent(decision.dataset.recommendation)}/decision`,
+      {action:decision.dataset.decision}, "Recomendaciones");
+    decision.disabled = false;
+    return;
+  }
 
   const review = event.target.closest("[data-review-alert]");
-  if(review){ state.reviewedAlerts.add(review.dataset.reviewAlert); render({force:true}); return; }
+  if(review){
+    review.disabled = true;
+    await submitOperationalAction(`/api/alerts/${encodeURIComponent(review.dataset.reviewAlert)}/review`, {}, "Alertas");
+    review.disabled = false;
+    return;
+  }
 
   const action = event.target.closest("[data-action]")?.dataset.action;
   if(!action) return;
@@ -925,6 +980,26 @@ document.addEventListener("click", async (event)=>{
   if(action==="critical-off") {
     const r=await fetch('/api/control/requests',{method:'POST',headers:{'content-type':'application/json','x-csrf-token':state.csrf},body:JSON.stringify({site_id:'la-espiga-chia',load_id:'freezer',action:'off'})});
     const result=await r.json(); toast(result.error || 'Solicitud procesada.');
+  }
+  if(action==="confirm-closing"){
+    const button = event.target.closest("[data-action]");
+    button.disabled = true;
+    await submitOperationalAction("/api/control/closing-mode", {confirm:true}, "Control");
+    button.disabled = false;
+  }
+  if(action==="test-email"){
+    const button = event.target.closest("[data-action]");
+    button.disabled = true;
+    try {
+      const response = await fetch("/api/ops/email/test", {method:"POST",headers:{"x-csrf-token":state.csrf}});
+      const result = await response.json();
+      if(response.status === 401){ endSession(); return; }
+      toast(response.ok ? "Correo de prueba aceptado por el servidor de correo." : (result.error || "No se pudo enviar el correo de prueba."));
+    } catch {
+      toast("No se pudo conectar con el servidor.");
+    } finally {
+      button.disabled = false;
+    }
   }
   if(action==="copy-endpoint"){
     const text=state.info?.telemetry_urls?.[0] || "";
@@ -1025,11 +1100,12 @@ window.addEventListener("resize", ()=>{
         });
       });
     }
-    const user=await response.json(); state.role=user.role; state.csrf=user.csrf;
+    const user=await response.json(); state.role=user.role; state.csrf=user.csrf; state.permissions=user.permissions || [];
   }
   await authenticate();
   render({force:true});
   await fetchInfo();
+  await loadOperationalView(state.view);
   await fetchTelemetry();
   setInterval(fetchTelemetry, 2000);
 })();

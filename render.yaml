@@ -23,3 +23,15 @@ services:
         sync: false
       - key: VATIO_PQR_EMAIL
         sync: false
+      - key: VATIO_SMTP_HOST
+        sync: false
+      - key: VATIO_SMTP_PORT
+        sync: false
+      - key: VATIO_SMTP_USER
+        sync: false
+      - key: VATIO_SMTP_PASSWORD
+        sync: false
+      - key: VATIO_SMTP_FROM
+        sync: false
+      - key: VATIO_SMTP_TO
+        sync: false

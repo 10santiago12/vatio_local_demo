@@ -9,3 +9,8 @@
 ## Actualización del 10 de noviembre
 
 El formulario de borrador se publicó en Google Forms. El enlace público de respuesta es https://docs.google.com/forms/d/e/1FAIpQLSdE0YHreDJoHdrcJX-PrvWy9xi7G6BLfXf5Io0jRO9HgJXF8A/viewform?usp=publish-editor. La hoja de respuestas se vinculó y se activaron notificaciones a la cuenta creadora. La identidad del responsable, la política y el correo PQR están [POR CONFIRMAR]. La rama publicada requiere revisión y despliegue antes de usar este enlace en el servicio remoto.
+
+## Avance en feat/completar-entrega
+
+- Alertas, recomendaciones y control simulado conectados a la API. SMTP de prueba con TLS y permisos preparado, sin cuenta real.
+- Pendientes: cifrado de SQLite y respaldos, conexión de otras vistas, proveedor y destinatario SMTP, política y responsable de datos, validación final y seguimiento PQR.

@@ -151,6 +151,29 @@ test.describe('sesion iniciada', () => {
     }
   });
 
+  test('control presenta la bandeja y la vista previa del cierre simulado', async ({ page }) => {
+    const preview = page.waitForResponse((r) => r.url().endsWith('/api/control/closing-mode') && r.request().method() === 'GET');
+    await page.goto(viewUrl('Control'));
+    expect((await preview).status()).toBe(200);
+    await expect(page.getByRole('heading', { name: 'Acciones pendientes de aprobación' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: 'Modo cierre simulado' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Confirmar modo cierre simulado' })).toBeVisible();
+  });
+
+  test('recomendaciones muestran datos de API y una decisión persiste', async ({ page }) => {
+    await page.goto(viewUrl('Recomendaciones'));
+    const card = page.locator('.recommendation').first();
+    await expect(card).toBeVisible();
+    const action = card.getByRole('button', { name: 'Aceptar' });
+    const recommendationId = await action.getAttribute('data-recommendation');
+    const response = page.waitForResponse((r) => r.url().includes('/api/recommendations/') && r.url().endsWith('/decision') && r.request().method() === 'POST');
+    await action.click();
+    expect((await response).status()).toBe(200);
+    await expect(page.locator('#toast-root')).toContainText('Cambio guardado.');
+    await page.reload();
+    await expect(page.locator(`[data-recommendation="${recommendationId}"]`)).toHaveCount(0);
+  });
+
   test('el tema cambia y persiste tras recargar', async ({ page }) => {
     await page.goto(`${baseUrl()}/?view=Inicio&theme=dark`);
     const before = await page.evaluate(() => document.documentElement.getAttribute('data-theme'));
