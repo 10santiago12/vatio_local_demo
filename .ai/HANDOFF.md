@@ -24,5 +24,5 @@ El formulario de borrador se publicó en Google Forms. El enlace público de res
 
 ## Estado confirmado posteriormente
 - Dominio vatio.lat con HTTPS y enlaces de formulario y correo PQR configurados. El usuario confirmó que recibió un mensaje de prueba reenviado; SMTP saliente continúa sin configurar.
-- El usuario informó que la política fue aprobada, pero no dispone del documento aprobado. Se actualizó el borrador con el responsable, vigencia del 18 de noviembre de 2026 y plazo de un mes para PQR y respuestas del formulario; falta verificar la ejecución de la eliminación y corregir los campos pendientes del formulario externo.
+- El usuario informó que la política fue aprobada, pero no dispone del documento aprobado. Se actualizó el borrador con el responsable, vigencia del 18 de noviembre de 2026 y plazo de un mes para PQR y respuestas del formulario. Se corrigió la descripción del formulario externo y se confirmó en su vista pública. La rutina de retención de `integrations/forms/retencion.gs` tiene pruebas locales, pero no está instalada ni activa; falta aplicarla y comprobarla en Forms, la hoja, el correo y las copias.
 - La base en Render gratuito sigue en almacenamiento efímero; persistencia gratuita y protección en reposo pendientes.

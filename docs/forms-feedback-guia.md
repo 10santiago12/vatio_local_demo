@@ -1,10 +1,10 @@
 # Configuración del formulario de sugerencias y PQR
 
-**Estado** [Forms publicado como borrador]. El formulario ya fue creado en la cuenta de Google seleccionada y está publicado como borrador. El responsable, la política, el correo PQR y la custodia institucional están pendientes de confirmación. La siguiente guía permite revisar y completar su configuración.
+**Estado:** formulario publicado desde la cuenta personal del propietario, con el responsable, el correo PQR y el enlace a la política visibles en la descripción. La aplicación enlaza el formulario y `pqr@vatio.lat`; el usuario confirmó la recepción de un mensaje de prueba. Falta verificar la custodia institucional y activar y comprobar la retención de un mes en el formulario, la hoja y el correo.
 
 ## Crear y publicar el formulario
 
-1. En Google Forms, cree un formulario en blanco con el título **Vatio · Sugerencias y PQR**. Use esta descripción: «Envíe reportes técnicos, sugerencias o solicitudes relacionadas con sus datos personales. Consulte el Aviso de Privacidad [POR CONFIRMAR: URL pública del aviso]. Comparta únicamente información necesaria para atender su solicitud. Evite contraseñas, identificaciones y datos sensibles».
+1. El formulario existente se titula **Vatio · Sugerencias y PQR**. Su descripción enlaza la política en https://vatio.lat/politica-de-tratamiento.html e indica el responsable y el correo de PQR. Solicite únicamente la información necesaria y evite contraseñas, identificaciones y datos sensibles.
 2. Agregue las preguntas de la tabla en el orden indicado. Configure validación de correo en la pregunta de respuesta. Use un enlace opcional en lugar de la carga de archivos para conservar el acceso sin cuenta. Si se comparte evidencia, limite su acceso a los revisores y evite datos de terceros.
 3. En **Configuración**, desactive la restricción a usuarios de la organización y el límite de una respuesta si estos obligan a iniciar sesión. Desactive la recopilación automática de cuentas, la edición posterior y la visualización de resultados por parte de quienes responden.
 4. En **Respuestas**, vincule una hoja con acceso restringido al equipo designado. Compruebe que conserva la marca de tiempo y active las notificaciones por cada respuesta. Defina el responsable de revisar la bandeja, clasificar y dar seguimiento.
@@ -25,8 +25,12 @@ Documentación del proveedor: [publicación en Google Forms](https://support.goo
 | 5 | Nivel de impacto | Selección única. Crítico, Alto, Medio/Bajo. |
 | 6 | Descripción detallada | Párrafo obligatorio. Indique qué pasó, cuándo y cómo reproducirlo, o describa la consulta o el reclamo. |
 | 7 | Evidencia o soporte | Enlace opcional a una captura o un archivo. |
-| 8 | Autorización de tratamiento | Casilla obligatoria sin premarcar. «Autorizo el tratamiento de los datos enviados para atender mi solicitud, según la Política de Tratamiento [POR CONFIRMAR: URL pública de la política]». |
+| 8 | Autorización de tratamiento | Casilla obligatoria sin premarcar. La descripción del formulario contiene el enlace a la política pública. |
 
 ## Actualización del 10 de noviembre
 
-El formulario de borrador se publicó en Google Forms. El enlace público de respuesta es https://docs.google.com/forms/d/e/1FAIpQLSdE0YHreDJoHdrcJX-PrvWy9xi7G6BLfXf5Io0jRO9HgJXF8A/viewform?usp=publish-editor. La hoja de respuestas se vinculó y se activaron notificaciones a la cuenta creadora. La identidad del responsable, la política y el correo PQR están [POR CONFIRMAR]. La rama publicada requiere revisión y despliegue antes de usar este enlace en el servicio remoto.
+El enlace público de respuesta es https://docs.google.com/forms/d/e/1FAIpQLSdE0YHreDJoHdrcJX-PrvWy9xi7G6BLfXf5Io0jRO9HgJXF8A/viewform. La hoja de respuestas está vinculada. El 18 de noviembre se corrigió la descripción pública; la versión de política publicada sigue identificada como borrador académico.
+
+## Retención de un mes
+
+Se preparó `integrations/forms/retencion.gs`, con pruebas locales para el cálculo del plazo y la vinculación entre formulario y hoja. El script **no está instalado ni activo**. Requiere configurarse en la cuenta propietaria, autorizar el acceso, validar con datos de prueba y crear un activador. No gestiona los correos de Outlook, las notificaciones, las copias ni los archivos enlazados por los usuarios. El plazo no queda garantizado si falla el activador; se necesita supervisión y una regla separada para el buzón.
