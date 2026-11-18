@@ -3,7 +3,7 @@
 const { HttpError } = require('../http/http-error');
 
 // Keep these identifiers in sync with the published documents.
-const CONSENT_VERSIONS = Object.freeze({ policyVersion: '2026-11-10.1', termsVersion: '2026-11-10.1' });
+const CONSENT_VERSIONS = Object.freeze({ policyVersion: '2026-11-18.1', termsVersion: '2026-11-10.1' });
 
 function requireConsent({ consents, userId, input, now, ip, userAgent }) {
   if (consents.has(userId, CONSENT_VERSIONS)) return;
