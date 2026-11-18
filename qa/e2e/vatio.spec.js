@@ -102,6 +102,57 @@ test.describe('autenticacion', () => {
 test.describe('sesion iniciada', () => {
   test.beforeEach(async ({ context }) => { await addSession(context); });
 
+  test('operaciones actualiza sus lecturas sin cambiar de vista', async ({ page }) => {
+    await page.goto(viewUrl('Operaciones'));
+    await expect(page.getByRole('heading', { name: 'Equipos y consumo' })).toBeVisible();
+    const refreshed = await page.waitForResponse(r => r.url().endsWith('/api/loads') && r.request().method() === 'GET', { timeout: 10000 });
+    expect(refreshed.status()).toBe(200);
+  });
+
+  test('las vistas muestran los datos entregados por sus API', async ({ page }) => {
+    const cases = [
+      ['Inicio', '/api/simple', 'Equipos por costo de hoy'],
+      ['Operaciones', '/api/loads', 'Equipos y consumo'],
+      ['Ahorro y retorno', '/api/savings', 'Consumo por semana'],
+      ['Reportes', '/api/reports/monthly', 'Reporte mensual'],
+      ['Módulos', '/api/modules', 'Estado de módulos'],
+      ['Datos crudos', '/api/data/readings', 'Lecturas guardadas'],
+      ['Multisede', '/api/multisite', 'Comparación por sede'],
+    ];
+    for (const [view, route, heading] of cases) {
+      const loaded = page.waitForResponse(r => r.url().endsWith(route) && r.request().method() === 'GET');
+      await page.goto(viewUrl(view));
+      expect((await loaded).status()).toBe(200);
+      await expect(page.getByRole('heading', {name: heading, exact: false}).first()).toBeVisible();
+    }
+  });
+
+  test('configuración persiste y el dueño puede crear y descargar un respaldo', async ({ page }) => {
+    await page.goto(viewUrl('Configuración'));
+    const investment = page.locator('#investment');
+    const previous = await investment.inputValue();
+    await investment.fill('1234567');
+    const saved = page.waitForResponse(r => r.url().endsWith('/api/settings') && r.request().method() === 'PUT');
+    await page.getByRole('button', { name: 'Guardar cambios' }).click();
+    expect((await saved).status()).toBe(200);
+    await page.reload();
+    await expect(investment).toHaveValue('1234567');
+    await investment.fill(previous);
+    const restored = page.waitForResponse(r => r.url().endsWith('/api/settings') && r.request().method() === 'PUT');
+    await page.getByRole('button', { name: 'Guardar cambios' }).click();
+    expect((await restored).status()).toBe(200);
+    const backup = page.waitForResponse(r => r.url().endsWith('/api/ops/backups') && r.request().method() === 'POST');
+    await page.getByRole('button', { name: 'Crear respaldo' }).click();
+    const response = await backup;
+    expect(response.status()).toBe(201);
+    const body = await response.json();
+    const link = page.getByRole('link', { name: body.backup.name });
+    await expect(link).toBeVisible();
+    const download = page.waitForEvent('download');
+    await link.click();
+    expect((await download).suggestedFilename()).toBe(body.backup.name);
+  });
+
   test('cada vista carga sin errores de consola ni peticiones fallidas (con capturas)', async ({ page }, info) => {
     const problems = watch(page);
     const dir = path.join(__dirname, '..', 'results', 'screenshots', info.project.name);

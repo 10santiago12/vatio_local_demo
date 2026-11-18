@@ -14,3 +14,10 @@ El formulario de borrador se publicó en Google Forms. El enlace público de res
 
 - Alertas, recomendaciones y control simulado conectados a la API. SMTP de prueba con TLS y permisos preparado, sin cuenta real.
 - Pendientes: cifrado de SQLite y respaldos, conexión de otras vistas, proveedor y destinatario SMTP, política y responsable de datos, validación final y seguimiento PQR.
+
+## Avance funcional 18 de noviembre
+- Inicio, operaciones, ahorro, reportes, módulos, datos y multisede consultan la API; Configuración guarda parámetros y permite al dueño crear/descargar respaldos.
+- `npm run check`: 141/141; `npm test`: 311 aprobadas, 3 omitidas; Chromium: 10 aprobadas, 2 omitidas, más prueba focalizada de las vistas aprobada.
+- Render respondió HTTPS 200 con certificado válido. La base y los respaldos aún no están cifrados en reposo; el plan gratuito tiene almacenamiento efímero. No se efectuó un despliegue nuevo.
+- SMTP requiere cuenta y destinatario reales; PQR y responsable de datos siguen pendientes. Firmware ESP32 HTTP: prueba aislada preparada en work/esp32_prueba, COM9, pendiente de carga y confirmación. No incluir secretos en Git.
+- Prueba física del ESP32 el 18 de noviembre: COM9, Wi-Fi 2,4 GHz; servidor aislado de pruebas en 192.168.10.6:3000 recibió POST /api/telemetry con HTTP 200 aproximadamente cada 5 s. SQLite confirmó origen esp32 y ocho módulos MX-001 a MX-008 con lecturas variables. Los valores son simulados; enlace HTTP sin cifrar. Credenciales y base de pruebas permanecen fuera del repositorio.

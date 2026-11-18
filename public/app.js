@@ -394,113 +394,14 @@ function setIfChanged(id, html){
 
 /* ---------- views ---------- */
 function viewInicio(){
-  const devs = sortedDevices();
-  const costs = devs.map(r=>({ ...r, estCost:Number(r.power_w)*8/1000*state.tariff }));
-  const max = Math.max(...costs.map(x=>x.estCost), 1);
-  const source = state.telemetry?.source === "esp32";
-  const alerts = buildAlerts();
-  const total = totalPower();
-  const nonEssential = readings().filter(r=>criticality[r.load_id]==="No esencial").reduce((a,r)=>a+Number(r.power_w||0),0);
-  const pct = total > 0 ? Math.round(nonEssential/total*100) : 0;
-  const liveCfg = {
-    aria:"Potencia total en las últimas lecturas", xName:"Hora",
-    labels: state.history.map(h=>h.label),
-    series:[{name:"Potencia total", data:state.history.map(h=>h.totalKw), color:"--chart-1", area:true}],
-    fmt:v=>num(v,2)+" kW", axisFmt:v=>num(v,1), ySize:44
-  };
-  return layout(`
-    ${bannerBlock(
-      source ? "Telemetría recibida desde hardware" : "Modo demostración sin hardware",
-      source ? `Gateway ${state.telemetry.gateway?.gateway_id || ""}` : "Conecta el ESP32 y el dashboard cambiará automáticamente.",
-      state.info?.telemetry_urls?.[0] || "Cargando endpoint...",
-      source ? "plug" : "cpu")}
-    <section class="hero">
-      <div class="card hero-gauge">
-        <div><h2>Consumo no esencial</h2><div class="small muted">Parte del consumo actual que se puede programar</div></div>
-        ${gauge(pct,{size:"188px", text:`${pct} %`, sub:"del total ahora", label:`Consumo no esencial: ${pct} % del total`})}
-        <div class="small muted">${num(nonEssential/1000,2)} kW de ${num(total/1000,2)} kW en uso</div>
-      </div>
-      <div class="hero-stats">
-        ${statCard({label:"Gasto de lecturas acumuladas", value:money(currentCost()), sub:source ? "Datos enviados por ESP32" : "Datos simulados", iconName:"trending-down", tone:"accent"})}
-        ${statCard({label:"Potencia instantánea", value:`${num(totalPower()/1000,2)}<small>kW</small>`, sub:`${readings().length} cargas visibles`, iconName:"zap"})}
-        ${statCard({label:"Ahorro acumulado", value:"$ 428.600", sub:"Valor demostrativo del prototipo", iconName:"piggy-bank"})}
-        ${statCard({label:"Alertas activas", value:String(alerts.length), sub:`${alerts.filter(a=>a.kind==="critical").length} requiere revisión`, iconName:"bell", tone:alerts.length?"warn":""})}
-      </div>
-    </section>
-    <div class="two-col">
-      <section class="card">
-        ${cardHead("trending-down","¿Qué está costando más ahora?","Ranking por potencia actual y costo estimado de 8 h")}
-        ${costs.slice(0,7).map(x=>`
-          <div class="rank-row">
-            <div class="rank-top"><span>${escapeHtml(x.load_name)}</span><strong>${money(x.estCost)}</strong></div>
-            <div class="track" role="img" aria-label="${escapeHtml(x.load_name)}: ${money(x.estCost)}"><span style="width:${Math.max(3,x.estCost/max*100)}%"></span></div>
-          </div>`).join("") || `<div class="empty">Esperando lecturas...</div>`}
-      </section>
-      <section class="card">
-        ${cardHead("activity","Potencia en vivo","Suma de todas las cargas, últimas lecturas","info")}
-        ${chartBlock(liveCfg, 260)}
-      </section>
-    </div>
-    <div class="two-col even">
-      <section class="card tint-bad">
-        ${cardHead("clock","El letrero puede quedar encendido después del cierre.","El ESP32 simula este comportamiento por la noche para disparar la demostración.","bad")}
-        ${pill("Fuera de horario","bad","triangle-alert")}
-      </section>
-      <section class="card">
-        ${cardHead("lightbulb","Top recomendaciones")}
-        ${[
-          "Programar apagado del letrero · $ 14.400/mes",
-          "Reducir standby de cafetera · $ 11.800/mes",
-          "Revisar congelador · consumo +18 %"
-        ].map((x,i)=>`<div class="rec-line"><span class="rec-num">${i+1}</span><span>${escapeHtml(x)}</span></div>`).join("")}
-      </section>
-    </div>
-  `);
+  if(!state.permissions.includes('view_simple')) return layout('<div class="card">Selecciona una sección disponible para tu perfil.</div>');
+  const v=apiView('Inicio'); if(v.html) return v.html; const d=v.data;
+  return layout(`<section class="grid4">${statCard({label:'Gasto de hoy',value:money(d.todaySpendCop),sub:escapeHtml(d.comparison?.text || ''),iconName:'trending-down'})}${statCard({label:'Alertas activas',value:String((d.alerts || []).length),iconName:'bell'})}</section><div class="two-col"><section class="card"><h2>Equipos por costo de hoy</h2>${(d.ranking || []).map(x=>`<div class="rank-row"><div class="rank-top"><span>${escapeHtml(x.name)}</span><strong>${money(x.costCop)}</strong></div></div>`).join('') || '<p>No hay lecturas disponibles.</p>'}</section><section class="card"><h2>Recomendaciones</h2>${(d.recommendations || []).map(x=>`<p>${escapeHtml(x.title)} · ${money(x.monthlySavingsCop)}/mes estimado</p>`).join('') || '<p>No hay recomendaciones disponibles.</p>'}<h2>Alertas</h2>${(d.alerts || []).map(x=>`<p>${escapeHtml(x.message)}</p>`).join('') || '<p>No hay alertas activas.</p>'}</section></div>`);
 }
 
 function viewOperaciones(){
-  const devs = sortedDevices();
-  const total = totalPower() || 1;
-  const top = devs.slice(0,3);
-  const palette = ["--chart-1","--chart-2","--chart-3"];
-  const liveCfg = {
-    aria:"Potencia de las tres cargas con mayor consumo", xName:"Hora",
-    labels: state.history.map(h=>h.label),
-    series: top.map((d,i)=>({
-      name:d.load_name, color:palette[i],
-      data: state.history.map(h=>h.loads[d.load_id] ?? null)
-    })),
-    fmt:v=>num(v,0)+" W", axisFmt:v=>num(v,0), ySize:48
-  };
-  return layout(`
-    <div class="toolbar">
-      ${pill(`${devs.length} cargas`,"good","plug")}
-      ${pill(`Críticas: ${devs.filter(d=>criticality[d.load_id]==="Crítica").length}`,"info","shield-check")}
-      ${pill(`Inactivas: ${devs.filter(d=>d.effective_status==="inactive").length}`,"warn","pause")}
-    </div>
-    <section class="card">
-      ${cardHead("activity","Las tres cargas que más consumen","Potencia en vatios, últimas lecturas","info")}
-      ${chartBlock(liveCfg, 260)}
-    </section>
-    <div class="gap"></div>
-    <section class="device-live-grid">
-      ${devs.map(d=>{
-        const share = Number(d.power_w||0)/total*100;
-        const inactive = d.effective_status==="inactive";
-        return `
-        <article class="device-card ${inactive?"inactive":""}">
-          <div class="device-top">
-            <div class="device-name"><span class="status-dot ${inactive?"inactive":""}"></span><span>${escapeHtml(d.load_name)}</span></div>
-            ${gauge(share,{cls:"mini", text:`${Math.round(share)} %`, label:`${d.load_name}: ${Math.round(share)} % del consumo total`})}
-          </div>
-          <div class="device-power">${num(d.power_w,0)} <small>W</small></div>
-          <div class="device-meta">${escapeHtml(criticality[d.load_id] || "Esencial")} · ${escapeHtml(d.module_id)}<br>
-          ${num(d.voltage_v,1)} V · ${num(d.current_a,2)} A<br>Actualizado ${escapeHtml(ageLabel(d))}</div>
-        </article>`;}).join("") || `<div class="card empty">Esperando lecturas...</div>`}
-    </section>
-    <div class="gap"></div>
-    ${deviceTable(devs)}
-  `);
+  const v=apiView('Operaciones'); if(v.html) return v.html;
+  return layout(`<section class="card"><h2>Equipos y consumo</h2>${tableData([['Equipo','name'],['Potencia W','currentPowerW'],['kWh de hoy','todayKwh'],['Costo de hoy COP','todayCostCop'],['Criticidad','criticalityLabel'],['Estado del módulo','moduleStatusText']],v.data.loads || [])}</section>`);
 }
 
 function deviceTable(devs){
@@ -599,144 +500,41 @@ function viewControl(){
   `);
 }
 
+function apiView(view){
+  const data = state.apiViews[view];
+  if(!data) return {html: layout('<div class="card">Cargando información…</div>')};
+  if(data.error) return {html: layout(`<div class="card" role="alert">${escapeHtml(data.error)}</div>`)};
+  return {data};
+}
+function tableData(columns, rows){
+  return `<div class="table-wrap"><table><thead><tr>${columns.map(c=>`<th>${escapeHtml(c[0])}</th>`).join('')}</tr></thead><tbody>${rows.map(row=>`<tr>${columns.map(c=>`<td>${escapeHtml(row[c[1]] ?? '—')}</td>`).join('')}</tr>`).join('') || `<tr><td colspan="${columns.length}">No hay datos disponibles.</td></tr>`}</tbody></table></div>`;
+}
 function viewAhorro(){
-  const monthlySaving = 214000;
-  const payback = state.investment / monthlySaving;
-  const weeks = Array.from({length:12},(_,i)=>String(i+1));
-  const real = [61,66,58,54,48,51,44,46,39,42,36,34];
-  const cum = [8,14,20,28,35,43,52,61,70,79,88,97];
-  const spendCfg = {
-    aria:"Gasto real frente a la línea base en 12 semanas", xName:"Semana",
-    labels:weeks, tipLabel:i=>`Semana ${i+1}`,
-    series:[
-      {name:"Gasto real", data:real, color:"--chart-1", area:true},
-      {name:"Línea base", data:real.map(()=>70), color:"--chart-2", dash:true}
-    ],
-    fmt:v=>num(v,0), axisFmt:v=>num(v,0), ySize:40, maxTicks:6
-  };
-  const cumCfg = {
-    aria:"Ahorro acumulado como porcentaje de la inversión", xName:"Semana",
-    labels:weeks, tipLabel:i=>`Semana ${i+1}`,
-    series:[
-      {name:"Ahorro acumulado", data:cum, color:"--chart-1", area:true},
-      {name:"Inversión recuperada", data:cum.map(()=>100), color:"--chart-2", dash:true}
-    ],
-    fmt:v=>num(v,0)+" %", axisFmt:v=>num(v,0)+" %", yMax:110, ySize:52, maxTicks:6
-  };
-  return layout(`
-    <section class="grid4">
-      ${statCard({label:"Ahorro acumulado", value:"$ 428.600", sub:"451,2 kWh evitados", iconName:"piggy-bank", tone:"accent"})}
-      ${statCard({label:"Inversión", value:money(state.investment), sub:"Configurable", iconName:"database"})}
-      ${statCard({label:"Retorno estimado", value:`${num(payback,1)}<small>meses</small>`, sub:"Rango demostrativo 7,1–10,2 meses", iconName:"clock"})}
-      ${statCard({label:"Reducción", value:"9,8 %", sub:"vs. línea base", iconName:"trending-down"})}
-    </section>
-    <div class="two-col even">
-      <section class="card">${cardHead("trending-down","Gasto real vs. línea base","Índice semanal, valores demostrativos")}${chartBlock(spendCfg,250)}</section>
-      <section class="card">${cardHead("piggy-bank","Ahorro acumulado vs. inversión","Porcentaje de la inversión recuperada","info")}${chartBlock(cumCfg,250)}</section>
-    </div>
-    <div class="table-wrap"><table><thead><tr><th>Recomendación</th><th>Estado</th><th>Ventana</th><th>Ahorro atribuible</th></tr></thead>
-    <tbody><tr><td>Apagado letrero</td><td>${pill("Concluyente","good","check")}</td><td>14 días</td><td>$ 13.920</td></tr>
-    <tr><td>Standby cafetera</td><td>${pill("No concluyente","neutral")}</td><td>12 días</td><td>Dentro de incertidumbre</td></tr>
-    <tr><td>Programa AC</td><td>${pill("En medición","info","clock")}</td><td>Día 4 de 7</td><td>—</td></tr></tbody></table></div>
-  `,"Ahorro y retorno");
+  const v=apiView('Ahorro y retorno'); if(v.html) return v.html;
+  const d=v.data;
+  return layout(`<section class="grid4">${statCard({label:'Ahorro acumulado estimado',value:money(d.cumulativeSavingsCop),sub:`${num(d.cumulativeSavingsKwh,2)} kWh`,iconName:'piggy-bank'})}${statCard({label:'Inversión',value:money(d.investmentCop),iconName:'database'})}${statCard({label:'Retorno',value:escapeHtml(d.payback?.label || 'No estimable'),sub:escapeHtml(d.payback?.message || ''),iconName:'clock'})}${statCard({label:'Equipos con línea base',value:String(d.loadsWithBaseline),iconName:'activity'})}</section><section class="card"><p>${escapeHtml(d.note || '')}</p><h2>Consumo por semana</h2>${tableData([['Desde','weekStart'],['Hasta','weekEnd'],['Línea base kWh','baselineKwh'],['Consumo kWh','actualKwh']],d.weekly || [])}</section>`,'Ahorro y retorno');
 }
-
 function viewReportes(){
-  const weekly = [48,55,64,58,69,73,62,67,75,81,76,84];
-  const cfg = {
-    aria:"Consumo semanal de ejemplo", xName:"Semana",
-    labels:weekly.map((_,i)=>String(i+1)), tipLabel:i=>`Semana ${i+1}`,
-    series:[{name:"Consumo semanal", data:weekly, color:"--chart-1"}],
-    bars:true, fmt:v=>num(v,0)+" kWh", axisFmt:v=>num(v,0), ySize:40
-  };
-  return layout(`
-    <div class="two-col even">
-      <section class="card tint-good">${cardHead("file-text","Reporte mensual financiero","Consumo, costo, ahorro, retorno, recomendaciones y alertas.")}<button class="btn primary" data-action="download-csv">${icon("download","sm")}Descargar CSV</button></section>
-      <section class="card tint-info">${cardHead("leaf","Impacto ODS 7","kWh evitados, reducción y kgCO2e evitados.","info")}<button class="btn" data-action="download-json">${icon("download","sm")}Descargar JSON</button></section>
-    </div>
-    <section class="card">
-      ${cardHead("activity","Vista previa · lecturas actuales","Consumo semanal de ejemplo (valores demostrativos)")}
-      <div class="toolbar">
-        ${pill(`Potencia total: ${num(totalPower()/1000,2)} kW`,"good","zap")}
-        ${pill(`Costo acumulado: ${money(currentCost())}`,"info","trending-down")}
-      </div>
-      ${chartBlock(cfg,250)}
-    </section>
-  `);
+  const v=apiView('Reportes'); if(v.html) return v.html; const d=v.data;
+  if(!d.summary) return layout(`<section class="card"><h2>Impacto ODS 7</h2><p>Energía evitada: ${num(d.avoidedKwh,2)} kWh · Emisiones evitadas: ${num(d.avoidedKgCo2e,2)} kg CO₂e</p><p>${escapeHtml(d.methodology || '')}</p>${state.permissions.includes('download_impact_report')?'<a class="btn" href="/api/reports/impact/download?format=pdf">Descargar impacto ODS 7</a>':''}</section>`);
+  return layout(`<section class="card"><h2>Reporte mensual · ${escapeHtml(d.month)}</h2><p>${escapeHtml(d.note || '')}</p>${tableData([['Equipo','name'],['Consumo kWh','consumptionKwh'],['Costo COP','consumptionCostCop'],['Ahorro COP','savingsCop']],d.loads || [])}<div class="actions">${state.permissions.includes('download_report')?'<a class="btn primary" href="/api/reports/monthly/download?format=csv">Descargar CSV</a><a class="btn" href="/api/reports/monthly/download?format=pdf">Descargar PDF</a>':''}${state.permissions.includes('download_impact_report')?'<a class="btn" href="/api/reports/impact/download?format=pdf">Descargar impacto ODS 7</a>':''}</div></section>`);
 }
-
 function viewModulos(){
-  const devs = sortedDevices();
-  return layout(`
-    ${bannerBlock("Endpoint del ESP32","Copia esta dirección en INGEST_URL dentro del .ino.", state.info?.telemetry_urls?.[0] || "Cargando...", "wifi")}
-    <div class="toolbar">${pill(`${devs.filter(d=>d.effective_status!=="inactive").length} activos`,"good","circle-check")}
-      ${pill(`${devs.filter(d=>d.effective_status==="inactive").length} inactivos`,"warn","pause")}
-      ${pill(state.telemetry?.source==="esp32"?"Hardware":"Simulador","info","cpu")}</div>
-    ${deviceTable(devs)}
-    <div class="gap"></div>
-    <section class="card tint-info">
-      ${cardHead("refresh-cw","Buffer / reconexión","","info")}
-      <div class="small muted">La API registra cada lote recibido en <code>data/telemetry.jsonl</code>. Si el módulo deja de enviar por más de 2 minutos se marca como inactivo.</div>
-    </section>
-  `,"Estado de módulos");
+  const v=apiView('Módulos'); if(v.html) return v.html;
+  return layout(`<section class="card"><h2>Estado de módulos</h2>${tableData([['Módulo','id'],['Fabricante','manufacturer'],['Equipo','loadName'],['Estado','statusText'],['Última señal','lastHeartbeat']],v.data.modules || [])}</section>`,'Estado de módulos');
 }
-
 function viewDatos(){
-  return layout(`
-    <div class="toolbar"><button class="btn primary" data-action="download-csv">${icon("download","sm")}Exportar CSV</button><button class="btn" data-action="download-json">${icon("download","sm")}Exportar JSON</button></div>
-    ${deviceTable(sortedDevices())}
-    <div class="gap"></div>
-    <section class="card">${cardHead("code-xml","Payload actual")}<div class="codebox" tabindex="0" aria-label="Payload actual en JSON">${escapeHtml(JSON.stringify(state.telemetry,null,2))}</div></section>
-  `,"Datos crudos");
+  const v=apiView('Datos crudos'); if(v.html) return v.html;
+  const cols=(v.data.columns || []).map(c=>[c,c]);
+  return layout(`<section class="card"><h2>Lecturas guardadas</h2><p>Se muestran hasta ${escapeHtml(v.data.limit)} registros.</p>${state.permissions.includes('export_raw_data')?'<a class="btn" href="/api/data/export?format=csv">Exportar CSV</a> <a class="btn" href="/api/data/export?format=json">Exportar JSON</a>':''}${tableData(cols,v.data.rows || [])}</section>`,'Datos crudos');
 }
-
 function viewMultisede(){
-  const sedes = [
-    {name:"Chía", red:9.8},
-    {name:"Cajicá", red:7.2},
-    {name:"Zipaquirá", red:11.3}
-  ];
-  const cfg = {
-    aria:"Reducción de consumo frente a la línea base por sede", xName:"Sede",
-    labels:sedes.map(s=>s.name), tipLabel:i=>`La Espiga · ${sedes[i].name}`,
-    series:[{name:"Reducción", data:sedes.map(s=>s.red), color:"--chart-1"}],
-    bars:true, fmt:v=>num(v,1)+" %", axisFmt:v=>axisNum(v)+" %", yMax:14, incrs:[2,5], ySize:48
-  };
-  return layout(`
-    <div class="table-wrap"><table><thead><tr><th>Sede</th><th>kWh/día</th><th>Costo/día</th><th>Ahorro/día</th><th>Reducción</th></tr></thead>
-    <tbody><tr><td>La Espiga · Chía</td><td>${num(dailyEstimateKwh(),1)}</td><td>${money(dailyEstimateKwh()*state.tariff)}</td><td>$ 14.290</td><td>9,8 %</td></tr>
-    <tr><td>La Espiga · Cajicá</td><td>148,1</td><td>$ 140.695</td><td>$ 10.630</td><td>7,2 %</td></tr>
-    <tr><td>La Espiga · Zipaquirá</td><td>171,0</td><td>$ 162.450</td><td>$ 18.310</td><td>${pill("11,3 % · mayor","good","trending-down")}</td></tr></tbody></table></div>
-    <div class="gap"></div>
-    <section class="card">${cardHead("building-2","Reducción frente a línea base","Porcentaje por sede")}${chartBlock(cfg,240)}</section>
-  `,"Comparación multisede");
+  const v=apiView('Multisede'); if(v.html) return v.html;
+  return layout(`<section class="card"><h2>Comparación por sede</h2>${tableData([['Sede','name'],['Días de operación','operatingDays'],['kWh/día','kwhPerOperatingDay'],['COP/día','copPerOperatingDay'],['Ahorro COP/día','savingsCopPerOperatingDay'],['Reducción %','reductionPct']],v.data.rows || [])}</section>`,'Comparación multisede');
 }
-
 function viewConfiguracion(){
-  return layout(`
-    <div class="two-col even">
-      <section class="card">
-        ${cardHead("settings","Empresa y cálculo")}
-        <div class="form-grid">
-          <div class="field"><label for="tariff">Tarifa COP/kWh</label><input id="tariff" type="number" value="${state.tariff}"></div>
-          <div class="field"><label for="investment">Inversión del sistema</label><input id="investment" type="number" value="${state.investment}"></div>
-          <div class="field"><label for="threshold">Umbral de alerta</label><input id="threshold" value="30 %"></div>
-          <div class="field"><label for="window">Ventana</label><input id="window" value="15 min"></div>
-        </div>
-        <div class="gap"></div><button class="btn primary" data-action="save-settings">${icon("check","sm")}Guardar cambios</button>
-      </section>
-      <section class="card">
-        ${cardHead("wifi","Conectividad local","","info")}
-        <div class="kpi-line"><span>Puerto</span><strong>${escapeHtml(state.info?.port || 3000)}</strong></div>
-        <div class="kpi-line"><span>Clave de dispositivo</span><strong>${state.info?.device_key_configured ? "Configurada" : "No configurada"}</strong></div>
-        <div class="kpi-line"><span>Fuente actual</span><strong>${state.telemetry?.source==="esp32"?"ESP32":"Simulador"}</strong></div>
-      </section>
-    </div>
-    ${state.permissions.includes("view_ops") ? `<div class="gap"></div><section class="card">
-      ${cardHead("mail","Correo electrónico","Prueba de envío al destinatario configurado por el administrador.")}
-      <button class="btn" data-action="test-email">Enviar correo de prueba</button>
-    </section>` : ""}
-  `);
+  const v=apiView('Configuración'); if(v.html) return v.html; const d=v.data;
+  return layout(`${d.settings?`<section class="card"><h2>Configuración</h2><div class="form-grid"><div class="field"><label for="investment">Inversión COP</label><input id="investment" type="number" min="0" value="${escapeHtml(d.settings.investmentCop)}"></div><div class="field"><label for="threshold">Umbral de alerta %</label><input id="threshold" type="number" min="1" max="500" value="${escapeHtml(d.settings.alertThresholdPct)}"></div><div class="field"><label for="window">Ventana en minutos</label><input id="window" type="number" min="1" max="120" value="${escapeHtml(d.settings.alertWindowMinutes)}"></div></div><button class="btn primary" data-action="save-settings">Guardar cambios</button></section>`:''}${state.permissions.includes('view_ops')?`<section class="card"><h2>Correo electrónico</h2><p>${d.email?.configured?'Correo configurado.':'Correo no configurado.'}</p><button class="btn" data-action="test-email">Enviar correo de prueba</button></section>`:''}${state.permissions.includes('manage_backups')?`<section class="card"><h2>Copias de seguridad</h2><p>Las copias locales deben descargarse fuera del servidor. El disco del plan gratuito de Render es temporal.</p><button class="btn" data-action="create-backup">Crear respaldo</button><ul>${(d.backups?.backups || []).map(b=>`<li><a href="/api/ops/backups/${encodeURIComponent(b.name)}/download">${escapeHtml(b.name)}</a> · ${num(b.size_bytes,0)} bytes</li>`).join('') || '<li>No hay copias disponibles.</li>'}</ul></section>`:''}`);
 }
 
 function viewDemo(){
@@ -802,7 +600,18 @@ function render(opts={}){
 }
 
 async function loadOperationalView(view){
-  const routes = { Alertas: "/api/alerts?view=active", Recomendaciones: "/api/recommendations" };
+  const routes = { Inicio: "/api/simple", Operaciones: "/api/loads", Alertas: "/api/alerts?view=active", Recomendaciones: "/api/recommendations", "Ahorro y retorno":"/api/savings", Reportes:"/api/reports/monthly", "Módulos":"/api/modules", "Datos crudos":"/api/data/readings", Multisede:"/api/multisite" };
+  if(view === "Configuración"){
+    try {
+      const endpoints=[];
+      if(state.permissions.includes('configure')) endpoints.push(['settings','/api/settings']);
+      if(state.permissions.includes('view_ops')) endpoints.push(['email','/api/ops/email']);
+      if(state.permissions.includes('manage_backups')) endpoints.push(['backups','/api/ops/backups']);
+      const results=await Promise.all(endpoints.map(async ([key,url])=>{ const r=await fetch(url,{cache:'no-store'}); if(r.status===401){endSession();throw Error('Sesión finalizada.');} const d=await r.json(); if(!r.ok) throw Error(d.error || 'No se pudo cargar la configuración.'); return [key,d]; }));
+      state.apiViews[view]=Object.fromEntries(results);
+    } catch(e){ state.apiViews[view]={error:e.message || 'No se pudo conectar con el servidor.'}; }
+    if(state.view===view) render({force:true}); return;
+  }
   if(view === "Control"){
     try {
       const endpoints = [];
@@ -822,6 +631,8 @@ async function loadOperationalView(view){
     if(state.view === view) render({force:true});
     return;
   }
+  if(view === 'Inicio' && !state.permissions.includes('view_simple')) return;
+  if(view === 'Reportes' && !state.permissions.includes('view_reports') && state.permissions.includes('view_impact_report')) routes.Reportes='/api/reports/impact';
   if(!routes[view]) return;
   try {
     const response = await fetch(routes[view], {cache:"no-store"});
@@ -1001,18 +812,18 @@ document.addEventListener("click", async (event)=>{
       button.disabled = false;
     }
   }
+  if(action==="create-backup"){
+    const button=event.target.closest('[data-action]'); button.disabled=true;
+    try {const r=await fetch('/api/ops/backups',{method:'POST',headers:{'x-csrf-token':state.csrf}}); const d=await r.json(); if(!r.ok) toast(d.error || 'No se pudo crear el respaldo.'); else {toast('Respaldo creado.'); await loadOperationalView('Configuración');}} catch {toast('No se pudo conectar con el servidor.');} finally {button.disabled=false;}
+  }
   if(action==="copy-endpoint"){
     const text=state.info?.telemetry_urls?.[0] || "";
     try{ await navigator.clipboard?.writeText(text); }catch(e){}
     toast("Endpoint copiado.");
   }
   if(action==="save-settings"){
-    state.tariff=Number(document.getElementById("tariff")?.value || state.tariff);
-    state.investment=Number(document.getElementById("investment")?.value || state.investment);
-    localStorage.setItem("vatio_tariff",state.tariff);
-    localStorage.setItem("vatio_investment",state.investment);
-    toast("Configuración guardada.");
-    render({force:true});
+    const payload={investmentCop:Number(document.getElementById('investment').value),alertThresholdPct:Number(document.getElementById('threshold').value),alertWindowMinutes:Number(document.getElementById('window').value)};
+    try { const r=await fetch('/api/settings',{method:'PUT',headers:{'content-type':'application/json','x-csrf-token':state.csrf},body:JSON.stringify(payload)}); const d=await r.json(); if(!r.ok){toast(d.error || 'No se pudo guardar.');return;} toast('Configuración guardada.'); await loadOperationalView('Configuración'); } catch {toast('No se pudo conectar con el servidor.');}
   }
 });
 
@@ -1108,4 +919,11 @@ window.addEventListener("resize", ()=>{
   await loadOperationalView(state.view);
   await fetchTelemetry();
   setInterval(fetchTelemetry, 2000);
+  let refreshPending = false;
+  setInterval(async () => {
+    if (refreshPending || document.hidden || isEditing()) return;
+    if (!['Inicio', 'Operaciones', 'Alertas', 'Módulos', 'Datos crudos'].includes(state.view)) return;
+    refreshPending = true;
+    try { await loadOperationalView(state.view); } finally { refreshPending = false; }
+  }, 5000);
 })();
