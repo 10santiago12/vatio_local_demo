@@ -455,6 +455,13 @@ function viewRecomendaciones(){
   if(!data) return layout('<div class="card">Cargando recomendaciones…</div>');
   if(data.error) return layout(`<div class="card" role="alert">${escapeHtml(data.error)}</div>`);
   return layout(`<section class="stack">
+    ${data.layaPreview ? `<section class="card"><h2>Demo de Laya · Televisor</h2>
+      <p>Compara dos momentos del lunes con 14 días de consumo de ejemplo. El horario de atención es de 06:00 a 20:00.</p>
+      <div class="actions">${data.layaPreview.map((s,i)=>`<button class="btn" data-action="laya-preview" data-slot="${i}" aria-pressed="${state.layaSlot===i}">${s.hour}:00 · ${i===0?'Abierto':'Cerrado'}</button>`).join('')}</div>
+      ${state.layaSlot == null ? '<p>Elige una hora para ver la decisión simulada.</p>' : (() => {
+        const s=data.layaPreview[state.layaSlot];
+        return s?.action ? `<p role="status"><strong>${s.action==='on'?'Encender':'Apagar'} el televisor</strong> · A las ${s.hour}:00 la demanda habitual es de ${Math.round(s.expectedW)} W.</p>` : '<p>Sin decisión para esta hora.</p>';
+      })()}</section>` : ''}
     ${data.laya?.length ? `<section class="card"><h2>Laya · Demanda por equipo</h2>
       ${data.laya.map(l=>`<p><strong>${escapeHtml(l.name)}</strong> · ${l.lastReadingAt ? `Último envío del ESP32: ${Math.round(l.watts)} W (${escapeHtml(new Date(l.lastReadingAt).toLocaleString('es-CO'))})` : 'Esperando lecturas del ESP32'}<br>
       ${!l.ready ? `Aprendiendo el patrón de consumo: ${l.dayCount} de ${l.requiredDays} días completos.` : l.suggestion ? `Sugerencia para esta hora: ${l.suggestion === 'on' ? 'encender' : 'apagar'}.` : 'Sin sugerencia para esta hora.'}</p>`).join('')}</section>` : ''}
@@ -778,6 +785,11 @@ document.addEventListener("click", async (event)=>{
 
   const action = event.target.closest("[data-action]")?.dataset.action;
   if(!action) return;
+  if(action==="laya-preview"){
+    state.layaSlot=Number(event.target.closest("[data-slot]").dataset.slot);
+    render({force:true});
+    return;
+  }
 
   if(action==="cycle-role") cycleRole();
   if(action==="toggle-theme") applyTheme(state.theme==="dark" ? "light" : "dark");

@@ -1,6 +1,7 @@
 'use strict';
 /** Operations screens: simple view, load list and detail, alerts and recommendations. */
 const { json } = require('./router');
+const layaPreview = require('../app/laya-preview');
 
 function register(router, app) {
   const { siteId } = app;
@@ -20,7 +21,7 @@ function register(router, app) {
 
   router.get('/api/recommendations', ({ query }) => {
     app.recommendations.ensureFresh(siteId);
-    return json(200, { recommendations: app.recommendations.list(siteId, query), laya: app.control.layaOverview(siteId) });
+    return json(200, { recommendations: app.recommendations.list(siteId, query), laya: app.control.layaOverview(siteId), layaPreview });
   }, { permission: 'view_recommendations', doc: 'Recomendaciones ordenadas por puntaje. Filtros: status, load.' });
   router.post('/api/recommendations/refresh', () => json(200, { created: app.recommendations.generate(siteId) }), { permission: 'decide_recommendation', doc: 'Genera recomendaciones nuevas ahora.' });
   router.post('/api/recommendations/:id/decision', async (ctx) => json(200, app.recommendations.decide(siteId, ctx.params.id, await ctx.body(), ctx.user)), {
