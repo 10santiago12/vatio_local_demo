@@ -455,6 +455,9 @@ function viewRecomendaciones(){
   if(!data) return layout('<div class="card">Cargando recomendaciones…</div>');
   if(data.error) return layout(`<div class="card" role="alert">${escapeHtml(data.error)}</div>`);
   return layout(`<section class="stack">
+    ${data.laya?.length ? `<section class="card"><h2>Laya · Demanda por equipo</h2>
+      ${data.laya.map(l=>`<p><strong>${escapeHtml(l.name)}</strong> · ${l.lastReadingAt ? `Último envío del ESP32: ${Math.round(l.watts)} W (${escapeHtml(new Date(l.lastReadingAt).toLocaleString('es-CO'))})` : 'Esperando lecturas del ESP32'}<br>
+      ${!l.ready ? `Aprendiendo el patrón de consumo: ${l.dayCount} de ${l.requiredDays} días completos.` : l.suggestion ? `Sugerencia para esta hora: ${l.suggestion === 'on' ? 'encender' : 'apagar'}.` : 'Sin sugerencia para esta hora.'}</p>`).join('')}</section>` : ''}
     ${data.recommendations.map(r=>`<article class="card recommendation">
       ${gauge(r.score,{cls:"score",text:String(r.score),label:`Puntaje ${r.score} de 100`})}
       <div class="rec-body"><h3>${escapeHtml(r.title)}</h3>
@@ -488,6 +491,7 @@ function viewControl(){
         <button class="btn" data-control-id="${a.id}" data-control-action="reject">Rechazar</button></td></tr>`).join("") ||
           '<tr><td colspan="4">No hay acciones pendientes.</td></tr>'}
       </tbody></table></div>` : ""}
+    ${data.executed ? `<section class="card"><h2>Decisiones simuladas de Laya</h2>${data.executed.filter(a=>a.rawOrigin === 'autonomous' && a.reason?.startsWith('Laya:')).map(a=>`<p>${escapeHtml(a.reason)} · ${escapeHtml(new Date(a.decidedAt).toLocaleString('es-CO'))}</p>`).join('') || '<p>Todavía no hay decisiones ejecutadas.</p>'}</section>` : ''}
     ${closing ? `<div class="gap"></div><section class="card"><h2>Modo cierre simulado</h2>
       <p>${escapeHtml(closing.estimatedNightlySavings.text)}</p>
       <h3>Equipos que se apagarían</h3>
@@ -615,14 +619,14 @@ async function loadOperationalView(view){
   if(view === "Control"){
     try {
       const endpoints = [];
-      if(state.permissions.includes("approve_action")) endpoints.push(["approvals", "/api/control/approvals"]);
+      if(state.permissions.includes("approve_action")) endpoints.push(["approvals", "/api/control/approvals"], ["executed", "/api/control/approvals?status=executed"]);
       if(state.permissions.includes("activate_closing_mode")) endpoints.push(["closing", "/api/control/closing-mode"]);
       const results = await Promise.all(endpoints.map(async ([key, url]) => {
         const response = await fetch(url, {cache:"no-store"});
         if(response.status === 401){ endSession(); throw new Error("session"); }
         const body = await response.json();
         if(!response.ok) throw new Error(body.error || "No fue posible cargar el control.");
-        return [key, key === "approvals" ? body.approvals : body];
+        return [key, key === "closing" ? body : body.approvals];
       }));
       state.apiViews.Control = Object.fromEntries(results);
     } catch(error) {
@@ -922,7 +926,7 @@ window.addEventListener("resize", ()=>{
   let refreshPending = false;
   setInterval(async () => {
     if (refreshPending || document.hidden || isEditing()) return;
-    if (!['Inicio', 'Operaciones', 'Alertas', 'Módulos', 'Datos crudos'].includes(state.view)) return;
+    if (!['Inicio', 'Operaciones', 'Alertas', 'Módulos', 'Datos crudos', 'Recomendaciones', 'Control'].includes(state.view)) return;
     refreshPending = true;
     try { await loadOperationalView(state.view); } finally { refreshPending = false; }
   }, 5000);

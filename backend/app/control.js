@@ -14,6 +14,7 @@ const { analyzeUsage } = require('../domain/recommendations');
 const { round } = require('../domain/stats');
 const { MS_PER_DAY, localDateKey } = require('../domain/time');
 const { formatCop } = require('../domain/text');
+const { layaDecision } = require('../domain/laya');
 const { badRequest, conflict, notFound } = require('../http/http-error');
 const { findLoad, modulesByLoad, communicationOf, moduleStates } = require('./module-state');
 
@@ -26,6 +27,7 @@ const PENDING_APPROVAL_TEXT = 'Pendiente de aprobación del administrador.';
  */
 function createControl({ repos, clock, access, analytics }) {
   const nowIso = () => new Date(clock.now()).toISOString();
+  const lastLayaSlot = new Map();
 
   function context(siteId, load) {
     const module_ = modulesByLoad(repos, siteId).get(load.id) || null;
@@ -205,6 +207,45 @@ function createControl({ repos, clock, access, analytics }) {
      * Safe-state job (RNF-18): pending actions of modules silent for more than 5 minutes are discarded and
      * their loads stay energized. Returns the discarded actions.
      */
+    layaOverview(siteId) {
+      const now = clock.now();
+      const schedule = analytics.scheduleOf(siteId);
+      const readings = new Map(repos.readings.latestBySite(siteId, { source: 'esp32' }).map(r => [r.load_id, r]));
+      return repos.loads.listBySite(siteId).filter(l => l.control_mode === 'control_enabled' && l.criticality === 'non_essential').map(load => {
+        const baseline = analytics.baselineOf(load, now);
+        const reading = readings.get(load.id);
+        const prediction = layaDecision(baseline, schedule, now);
+        return { name: load.name, watts: reading?.power_w ?? null, lastReadingAt: reading?.ts ?? null,
+          dayCount: baseline.dayN, requiredDays: baseline.requiredDays, ready: baseline.status === 'ready',
+          suggestion: prediction?.action ?? null };
+      });
+    },
+
+    runLaya(siteId) {
+      const now = clock.now();
+      const slot = Math.floor(now / 60000);
+      if (lastLayaSlot.get(siteId) === slot) return [];
+      const schedule = analytics.scheduleOf(siteId);
+      const modules = modulesByLoad(repos, siteId);
+      const actions = [];
+      for (const load of repos.loads.listBySite(siteId)) {
+        if (load.control_mode !== 'control_enabled' || load.criticality !== 'non_essential') continue;
+        const device = modules.get(load.id);
+        const moduleState = communicationOf(device, now);
+        if (moduleState.state !== 'healthy' || device?.status === 'error') continue;
+        const prediction = layaDecision(analytics.baselineOf(load, now), schedule, now);
+        if (!prediction || prediction.action === load.power_state) continue;
+        const { action } = prediction;
+        const decision = decideControlAction({ load: analytics.domainLoad(load, device.id),
+          action, origin: 'autonomous', approved: false, moduleState, now, actor: 'Laya' });
+        if (decision.outcome !== 'executed') continue;
+        decision.message = `Laya: ${action === 'on' ? 'encendido' : 'apagado'} simulado de ${load.name}. Consumo habitual a esta hora: ${Math.round(prediction.expectedW)} W.`;
+        actions.push(settle(decision, { siteId, load, user: null, origin: 'autonomous', action, extra: prediction }));
+      }
+      lastLayaSlot.set(siteId, slot);
+      return actions;
+    },
+
     runSafeState(siteId) {
       const nowMs = clock.now();
       const modulesOfLoad = modulesByLoad(repos, siteId);

@@ -65,6 +65,7 @@ function createDemo(deps) {
     guard('module-status', () => ingestion.refreshModuleStatuses());
     guard('alerts', () => { out.alertsCreated = alerts.run(siteId).created.length; });
     guard('safe-state', () => { out.discarded = control.runSafeState(siteId).length; });
+    guard('laya', () => { out.layaActions = control.runLaya(siteId).length; });
     guard('recommendations', () => recommendations.ensureFresh(siteId));
     return out;
   }

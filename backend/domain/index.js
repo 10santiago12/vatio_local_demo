@@ -16,6 +16,7 @@ module.exports = {
   text: require('./text'),
   cost: require('./cost'),
   baseline: require('./baseline'),
+  laya: require('./laya'),
   alerts: require('./alerts'),
   recommendations: require('./recommendations'),
   control: require('./control'),

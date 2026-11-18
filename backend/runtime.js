@@ -12,10 +12,11 @@
 const { migrate } = require('./db/migrate');
 const { createRepositories } = require('./db/repositories');
 const { SystemClock, SimulatedClock } = require('./adapters/clock');
-const { MAIN_SITE_ID } = require('./adapters/simulator/profiles');
+const { MAIN_SITE_ID, MAIN_PROFILES } = require('./adapters/simulator/profiles');
+const { transaction } = require('./db/connection');
 const { createIngestion } = require('./app/ingestion');
 const { ensureMainSite } = require('./app/site-setup');
-const { loadDemoScenario } = require('./app/demo-data');
+const { loadDemoScenario, ensureLoad } = require('./app/demo-data');
 const { hashPassword } = require('./app/passwords');
 const { createAccess } = require('./app/access');
 const { createAuth } = require('./app/auth');
@@ -92,6 +93,18 @@ function createRuntime({ config, db, wallNow = Date.now }) {
     demoMode = true;
   }
   ensureMainSite({ repos, clock });
+  // Commission only the eight virtual meters sent by the project's physical ESP32.
+  if (config.isProduction) transaction(db, () => {
+    const assigned = new Set(repos.modules.listBySite(siteId).map(m => m.load_id));
+    for (const profile of MAIN_PROFILES) {
+      if (!/^MX-00[1-8]$/.test(profile.moduleId) || repos.modules.get(profile.moduleId)) continue;
+      const { load } = ensureLoad(repos, siteId, profile);
+      if (!assigned.has(load.id)) repos.modules.register({
+        id: profile.moduleId, siteId, loadId: load.id, manufacturer: profile.manufacturer,
+        registeredAt: clock.nowIso(), status: 'inactive',
+      });
+    }
+  });
 
   const ingestion = createIngestion({ repos, clock, options: { autoRegister: !config.isProduction } });
   const state = { scenario: loadDemoScenario({ repos, clock }), demoMode };
